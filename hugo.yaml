@@ -1,0 +1,152 @@
+baseURL: "https://lavinigam.github.io/"  # Update this with your custom domain later
+languageCode: en-us
+title: Lavi Nigam
+theme: PaperMod
+
+# Pagination
+pagination:
+  pagerSize: 5
+
+# Enable emoji support
+enableEmoji: true
+
+# Enable robots.txt generation
+enableRobotsTXT: true
+
+# Build settings
+buildDrafts: false
+buildFuture: false
+buildExpired: false
+
+# Minify output
+minify:
+  disableXML: true
+
+# Output formats
+outputs:
+  home:
+    - HTML
+    - RSS
+    - JSON
+
+# PaperMod Parameters
+params:
+  env: production
+  description: "Personal website and blog"
+  author: Lavi Nigam
+
+  # Date format
+  DateFormat: "January 2, 2006"
+
+  # Show "Reading Time"
+  ShowReadingTime: true
+
+  # Show "Share" buttons
+  ShowShareButtons: true
+
+  # Show post navigation links
+  ShowPostNavLinks: true
+
+  # Show breadcrumbs
+  ShowBreadCrumbs: true
+
+  # Show code copy buttons
+  ShowCodeCopyButtons: true
+
+  # Show word count
+  ShowWordCount: true
+
+  # Show RSS button in menu
+  ShowRssButtonInSectionTermList: true
+
+  # Use Hugo's syntax highlighter
+  UseHugoToc: true
+
+  # Display full text in RSS
+  ShowFullTextinRSS: true
+
+  # Social icons (customize these with your own links)
+  socialIcons:
+    - name: github
+      url: "https://github.com/lavinigam"
+    - name: linkedin
+      url: "https://linkedin.com/in/yourprofile"
+    - name: twitter
+      url: "https://twitter.com/yourhandle"
+    - name: rss
+      url: "index.xml"
+
+  # Homepage configuration
+  homeInfoParams:
+    Title: "Welcome"
+    Content: >
+      Welcome to my personal website.
+
+      This site is built with Hugo and the PaperMod theme.
+
+  # Edit post link
+  editPost:
+    URL: "https://github.com/lavinigam/lavinigam-ai-website/tree/main/content"
+    Text: "Suggest Changes"
+    appendFilePath: true
+
+# Menu configuration
+menu:
+  main:
+    - identifier: blog
+      name: Blog
+      url: /posts/
+      weight: 10
+    - identifier: tags
+      name: Tags
+      url: /tags/
+      weight: 20
+    - identifier: archives
+      name: Archives
+      url: /archives/
+      weight: 30
+    - identifier: search
+      name: Search
+      url: /search/
+      weight: 40
+    - identifier: about
+      name: About
+      url: /about/
+      weight: 50
+
+# Taxonomies
+taxonomies:
+  category: categories
+  tag: tags
+  series: series
+
+# Privacy settings
+privacy:
+  disqus:
+    disable: true
+  googleAnalytics:
+    disable: false
+    anonymizeIP: true
+    respectDoNotTrack: true
+  instagram:
+    disable: true
+  x:
+    disable: false
+    enableDNT: true
+  vimeo:
+    disable: true
+  youtube:
+    privacyEnhanced: true
+
+# Markup configuration
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
+  highlight:
+    anchorLineNos: false
+    codeFences: true
+    guessSyntax: false
+    lineNos: false
+    noClasses: false
+    style: monokai
