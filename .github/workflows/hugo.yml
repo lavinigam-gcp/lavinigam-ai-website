@@ -85,12 +85,11 @@ jobs:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
 
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
       - name: Deploy to Firebase Hosting (Production)
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          projectId: ${{ secrets.GCP_PROJECT_ID }}
-          channelId: live
+        run: firebase deploy --only hosting
 
   deploy-preview:
     runs-on: ubuntu-latest
@@ -112,10 +111,10 @@ jobs:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
 
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
       - name: Deploy to Firebase Hosting (Preview Channel)
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          projectId: ${{ secrets.GCP_PROJECT_ID }}
-          channelId: "pr-${{ github.event.number }}"
-          expires: 7d
+        run: |
+          firebase hosting:channel:deploy pr-${{ github.event.number }} \
+            --expires 7d
