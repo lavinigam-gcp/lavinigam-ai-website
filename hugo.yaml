@@ -1,4 +1,4 @@
-baseURL: "https://lavinigam-gcp.github.io/lavinigam-ai-website/"  # Update this with your custom domain later
+baseURL: "https://lavinigam.com"
 languageCode: en-us
 title: Lavi Nigam
 theme: PaperMod
@@ -137,6 +137,10 @@ privacy:
     disable: true
   youtube:
     privacyEnhanced: true
+
+services:
+  googleAnalytics:
+    ID: REPLACE_WITH_GA4_ID
 
 # Markup configuration
 markup:
