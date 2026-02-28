@@ -1,0 +1,23 @@
+{{- if .IsHome -}}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Lavi Nigam",
+  "url": "https://lavinigam.com",
+  "description": "Personal blog on AI, technology, and building in public.",
+  "author": {
+    "@type": "Person",
+    "name": "Lavi Nigam"
+  },
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": "https://lavinigam.com/search/?q={search_term_string}"
+    },
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+{{- end -}}
