@@ -89,7 +89,6 @@ jobs:
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ""
           projectId: ${{ secrets.GCP_PROJECT_ID }}
           channelId: live
 
@@ -117,6 +116,6 @@ jobs:
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ""
           projectId: ${{ secrets.GCP_PROJECT_ID }}
+          channelId: "pr-${{ github.event.number }}"
           expires: 7d
