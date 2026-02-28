@@ -1,0 +1,18 @@
+# Lavi Nigam
+
+> Personal blog on AI, technology, and building in public.
+
+Author: Lavi Nigam — AI practitioner and builder. Also at theagentguy.ai
+
+## Content
+- /posts/ — All blog posts
+- /about/ — About the author
+- /tags/ — Browse posts by topic
+- /archives/ — Chronological archive
+
+## Topics
+AI, machine learning, software engineering, building in public, tech strategy
+
+## Contact
+- GitHub: https://github.com/lavinigam
+- LinkedIn: https://linkedin.com/in/yourprofile
