@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "kaggle-on-gcp",
     "public": "public",
     "ignore": [
       "firebase.json",
