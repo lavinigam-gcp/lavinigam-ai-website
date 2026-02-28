@@ -25,18 +25,22 @@ The dev server runs at `http://localhost:1313`. The CI workflow pins Hugo at ver
 
 ## Architecture
 
-**Hugo + PaperMod** static site deployed to GitHub Pages via `.github/workflows/hugo.yml` on every push to `main`.
+**Hugo + PaperMod** static site deployed to **Firebase Hosting** (GCP project: `kaggle-on-gcp`) via `.github/workflows/hugo.yml` on every push to `main`. Custom domain: `lavinigam.com`.
 
 - `hugo.yaml` — all site configuration: `baseURL`, nav menu, PaperMod params, taxonomies, privacy, markup
 - `content/` — Markdown content; posts go in `content/posts/`, standalone pages at the root
 - `themes/PaperMod/` — git submodule (do not edit files here)
 - `layouts/` — theme overrides; any file here shadows the equivalent in `themes/PaperMod/layouts/`
-- `static/` — copied verbatim to the build output root (e.g. `CNAME` for custom domain)
+- `layouts/partials/structured-data/` — JSON-LD Schema.org partials (Article, Person, WebSite)
+- `static/` — copied verbatim to the build output root (`llms.txt`, `robots.txt`)
 - `archetypes/default.md` — front matter template for `hugo new`
+- `firebase.json` — Firebase Hosting config (security headers, clean URLs, caching)
+- `.firebaserc` — links repo to GCP project
+- `Makefile` — convenience commands (`make new`, `make preview`, `make build`)
 
-**Theme customization pattern**: Override theme templates by mirroring their path under `layouts/`. Currently `layouts/partials/extend_head.html` injects Cloudflare Web Analytics without touching the submodule.
+**Theme customization pattern**: Override theme templates by mirroring their path under `layouts/`. `layouts/partials/extend_head.html` injects JSON-LD structured data partials.
 
-**Deployment**: GitHub Actions builds with `--gc --minify` and deploys `./public` as a GitHub Pages artifact. The `baseURL` is set dynamically from the Pages environment during CI builds.
+**Deployment**: GitHub Actions builds with `--gc --minify`, authenticates via Workload Identity Federation (keyless), and deploys to Firebase Hosting using `firebase deploy`. The `baseURL` is hardcoded to `https://lavinigam.com`.
 
 ## Git Workflow
 

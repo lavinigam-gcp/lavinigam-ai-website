@@ -25,6 +25,9 @@ node_modules/
 firebase-debug.log
 .firebase/
 
+# Internal docs and plans (local reference only)
+docs/
+
 # Secrets
 .env
 .env.local
