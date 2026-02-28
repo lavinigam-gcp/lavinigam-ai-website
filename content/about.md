@@ -1,4 +1,9 @@
---- 
+---
+title: "About"
+layout: "about"
+url: "/about/"
+---
+
 # Hey there, I'm Lavi Nigam! 👋
 
 I’m an ML Engineer at Google, where I spend my days helping build the future of AI Agents—most notably working closely on the Agent Development Kit (ADK). But at my core, I’m just a chronic tinkerer, a builder, and someone who loves playing in the digital sandbox of GenAI.
