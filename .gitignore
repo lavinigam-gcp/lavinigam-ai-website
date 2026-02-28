@@ -1,9 +1,7 @@
-# Hugo default output directory
-/public/
-
-# Hugo cache directory
-/resources/_gen/
-/.hugo_build.lock
+# Hugo build output
+public/
+resources/
+.hugo_build.lock
 
 # OS files
 .DS_Store
@@ -22,3 +20,13 @@ node_modules/
 
 # Temporary files
 *.log
+
+# Firebase
+firebase-debug.log
+.firebase/
+
+# Secrets
+.env
+.env.local
+*service-account*.json
+*-creds.json
