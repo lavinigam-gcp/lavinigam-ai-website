@@ -4,7 +4,7 @@ date: 2026-02-28T21:39:26+05:30
 lastmod: 2026-02-28T21:39:26+05:30
 draft: false
 description: "The first post on lavinigam.com — why I'm building in public and what to expect from this blog."
-tags: ["meta", "building-in-public"]
+tags: ["building-in-public"]
 categories: ["announcements"]
 series: []
 showToc: false

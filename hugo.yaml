@@ -67,26 +67,25 @@ params:
 
   # Social icons (customize these with your own links)
   socialIcons:
+    - name: linkedin
+      url: "https://www.linkedin.com/in/lavinigam/"
+    - name: x
+      url: "https://x.com/_theagentguy_"
     - name: github
       url: "https://github.com/lavinigam"
-    - name: linkedin
-      url: "https://linkedin.com/in/yourprofile"
-    - name: twitter
-      url: "https://twitter.com/yourhandle"
     - name: rss
       url: "index.xml"
 
   # Homepage configuration
   homeInfoParams:
-    Title: "Welcome"
+    Title: "Hey, I'm Lavi Nigam"
     Content: >
-      Welcome to my personal website.
-
-      This site is built with Hugo and the PaperMod theme.
+      ML Engineer at Google, building AI Agents.
+      I write about Agent Engineering, GenAI experiments, and building in public.
 
   # Edit post link
   editPost:
-    URL: "https://github.com/lavinigam/lavinigam-ai-website/tree/main/content"
+    URL: "https://github.com/lavinigam-gcp/lavinigam-ai-website/tree/main/content"
     Text: "Suggest Changes"
     appendFilePath: true
 
