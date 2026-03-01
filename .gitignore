@@ -27,6 +27,7 @@ firebase-debug.log
 
 # Internal docs and plans (local reference only)
 docs/
+CLAUDE.md
 
 # Secrets
 .env

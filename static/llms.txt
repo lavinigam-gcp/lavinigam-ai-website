@@ -14,5 +14,6 @@ Author: Lavi Nigam — AI practitioner and builder. Also at theagentguy.ai
 AI, machine learning, software engineering, building in public, tech strategy
 
 ## Contact
-- GitHub: https://github.com/lavinigam
-- LinkedIn: https://linkedin.com/in/yourprofile
+- GitHub: https://github.com/lavinigam-gcp
+- LinkedIn: https://www.linkedin.com/in/lavinigam/
+- X: https://x.com/_theagentguy_
