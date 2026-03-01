@@ -1,12 +1,14 @@
 .PHONY: new preview build preview-deploy help
 
-## Create a new post: make new name=my-post-title
+## Create a new post (page bundle): make new name=my-post-title
 new:
 	@if [ -z "$(name)" ]; then \
 		read -p "Post name (kebab-case, e.g. my-first-post): " name; \
-		hugo new posts/$$name.md; \
+		mkdir -p content/posts/$$name && \
+		hugo new posts/$$name/index.md; \
 	else \
-		hugo new posts/$(name).md; \
+		mkdir -p content/posts/$(name) && \
+		hugo new posts/$(name)/index.md; \
 	fi
 
 ## Start local dev server with drafts
