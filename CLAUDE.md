@@ -5,30 +5,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-# Local development server (includes drafts)
-hugo server -D
+# Local dev server (includes drafts)
+make preview
 
 # Production build
-hugo --minify
+make build
 
-# Create a new blog post
-hugo new posts/my-post-name.md
-
-# Create a new page
-hugo new page-name.md
+# Create a new blog post (page bundle)
+make new name=my-post-name
 
 # Update the PaperMod theme submodule
 git submodule update --remote --merge
 ```
 
-The dev server runs at `http://localhost:1313`. The CI workflow pins Hugo at version `0.152.2` (extended).
+Dev server: `http://localhost:1313`. CI pins Hugo `0.152.2` (extended).
 
 ## Architecture
 
 **Hugo + PaperMod** static site deployed to **Firebase Hosting** (GCP project: `kaggle-on-gcp`) via `.github/workflows/hugo.yml` on every push to `main`. Custom domain: `lavinigam.com`.
 
 - `hugo.yaml` — all site configuration: `baseURL`, nav menu, PaperMod params, taxonomies, privacy, markup
-- `content/` — Markdown content; posts go in `content/posts/`, standalone pages at the root
+- `content/` — Markdown content; standalone pages at root, posts as page bundles (see below)
 - `themes/PaperMod/` — git submodule (do not edit files here)
 - `layouts/` — theme overrides; any file here shadows the equivalent in `themes/PaperMod/layouts/`
 - `layouts/partials/structured-data/` — JSON-LD Schema.org partials (Article, Person, WebSite)
@@ -42,8 +39,22 @@ The dev server runs at `http://localhost:1313`. The CI workflow pins Hugo at ver
 
 **Deployment**: GitHub Actions builds with `--gc --minify`, authenticates via Workload Identity Federation (keyless), and deploys to Firebase Hosting using `firebase deploy`. The `baseURL` is hardcoded to `https://lavinigam.com`.
 
+## Content Structure
+
+Posts are **page bundles** — a folder with `index.md` + its images:
+
+```
+content/posts/my-post-name/
+  index.md        ← markdown content (MUST be index.md)
+  cover.webp      ← cover/OG image
+  diagram.png     ← inline images
+```
+
+Images are referenced by filename only: `![alt](diagram.png)`. Cover image in front matter: `cover.image: "cover.webp"`.
+
 ## Git Workflow
 
+- `main` is branch-protected — all changes go through a PR with passing build check.
 - **Never** add `Co-Authored-By: Claude ...` trailers to commit messages.
 - Commit messages should be clean and authored solely under the user's identity.
 
