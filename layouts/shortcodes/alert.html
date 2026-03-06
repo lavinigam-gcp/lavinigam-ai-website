@@ -1,0 +1,13 @@
+{{ $type := .Get "type" | default "note" }}
+<div class="shortcode-alert shortcode-alert-{{ $type }}">
+  <p class="alert-heading">
+    {{- if eq $type "note" }}&#x2139;&#xFE0F; Note
+    {{- else if eq $type "tip" }}&#x1F4A1; Tip
+    {{- else if eq $type "important" }}&#x2757; Important
+    {{- else if eq $type "warning" }}&#x26A0;&#xFE0F; Warning
+    {{- else if eq $type "caution" }}&#x1F6D1; Caution
+    {{- else }}{{ $type | title }}
+    {{- end -}}
+  </p>
+  {{ .Inner | markdownify }}
+</div>

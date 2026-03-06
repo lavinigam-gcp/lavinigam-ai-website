@@ -22,6 +22,9 @@
     "@type": "WebPage",
     "@id": {{ .Permalink | jsonify }}
   }
+  {{- with .Params.tags -}}
+  ,"keywords": {{ . | jsonify }}
+  {{- end -}}
   {{- with .Params.cover.image -}}
   ,"image": {{ . | absURL | jsonify }}
   {{- end -}}

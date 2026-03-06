@@ -29,6 +29,9 @@ firebase-debug.log
 docs/
 CLAUDE.md
 
+# Test content (local reference only)
+content/posts/test_post/
+
 # Secrets
 .env
 .env.local

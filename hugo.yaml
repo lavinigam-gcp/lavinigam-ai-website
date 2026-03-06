@@ -1,6 +1,7 @@
 baseURL: "https://lavinigam.com"
 languageCode: en-us
 title: Lavi Nigam
+copyright: "[Lavi Nigam](/about/)"
 theme: PaperMod
 
 # Pagination
@@ -34,6 +35,20 @@ params:
   env: production
   description: "Personal website and blog"
   author: Lavi Nigam
+  comments: true
+
+  # Giscus comments (GitHub Discussions)
+  giscus:
+    repo: "lavinigam-gcp/lavinigam-ai-website"
+    repoId: "R_kgDOQNKCrQ"
+    category: "Announcements"
+    categoryId: "DIC_kwDOQNKCrc4C3mpe"
+    mapping: "pathname"
+    reactionsEnabled: "1"
+    emitMetadata: "0"
+    inputPosition: "top"
+    theme: "preferred_color_scheme"
+    lang: "en"
 
   # Date format
   DateFormat: "January 2, 2006"
@@ -42,7 +57,7 @@ params:
   ShowReadingTime: true
 
   # Show "Share" buttons
-  ShowShareButtons: true
+  ShowShareButtons: false
 
   # Show post navigation links
   ShowPostNavLinks: true
@@ -65,23 +80,9 @@ params:
   # Display full text in RSS
   ShowFullTextinRSS: true
 
-  # Social icons (customize these with your own links)
-  socialIcons:
-    - name: linkedin
-      url: "https://www.linkedin.com/in/lavinigam/"
-    - name: x
-      url: "https://x.com/_theagentguy_"
-    - name: github
-      url: "https://github.com/lavinigam-gcp"
-    - name: rss
-      url: "index.xml"
-
-  # Homepage configuration
-  homeInfoParams:
-    Title: "Hey, I'm Lavi Nigam"
-    Content: >
-      ML Engineer at Google, building AI Agents.
-      I write about Agent Engineering, GenAI experiments, and building in public.
+  # Social accounts (used by Twitter Cards, etc.)
+  social:
+    twitter: _theagentguy_
 
   # Edit post link
   editPost:

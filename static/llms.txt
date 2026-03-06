@@ -1,8 +1,8 @@
 # Lavi Nigam
 
-> Personal blog on AI, technology, and building in public.
+> Personal blog on AI, Agent Engineering, and building in public.
 
-Author: Lavi Nigam — AI practitioner and builder. Also at theagentguy.ai
+Author: Lavi Nigam — ML Engineer at Google, building AI Agents. Also at theagentguy.ai
 
 ## Content
 - /posts/ — All blog posts
@@ -10,8 +10,16 @@ Author: Lavi Nigam — AI practitioner and builder. Also at theagentguy.ai
 - /tags/ — Browse posts by topic
 - /archives/ — Chronological archive
 
+## Featured Series: Agent Engineering with ADK
+
+A 3-part tutorial on building Agent Skills for Google's Agent Development Kit (ADK):
+
+- /posts/adk-agent-skills-part1/ — Part 1: What Are Agent Skills? Progressive disclosure for ADK agents. Covers inline skills, project setup, and the SkillToolset pattern.
+- /posts/adk-agent-skills-part2/ — Part 2: From Files to Ecosystems. File-based skills, external skill repos, and SkillToolset internals for multi-skill progressive disclosure.
+- /posts/adk-agent-skills-part3/ — Part 3: Skills That Write Skills. Meta skills that generate new SKILL.md files on demand, creating self-extending ADK agents.
+
 ## Topics
-AI, machine learning, software engineering, building in public, tech strategy
+AI, machine learning, agent engineering, ADK, Google Agent Development Kit, agent skills, progressive disclosure, software engineering, building in public
 
 ## Contact
 - GitHub: https://github.com/lavinigam-gcp

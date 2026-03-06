@@ -1,0 +1,16 @@
+{{ $href := .Get "href" }}
+{{ $title := .Get "title" }}
+{{ $desc := .Get "description" | default "" }}
+{{ $icon := .Get "icon" | default "&#x1F4C4;" }}
+{{ $external := strings.HasPrefix $href "http" }}
+<a class="card-link" href="{{ $href | safeURL }}"
+  {{- if $external }} target="_blank" rel="noopener noreferrer"{{ end }}>
+  <span class="card-link-icon">{{ $icon | safeHTML }}</span>
+  <div class="card-link-body">
+    <p class="card-link-title">{{ $title }}</p>
+    {{- with $desc }}
+    <p class="card-link-desc">{{ . }}</p>
+    {{- end }}
+  </div>
+  <span class="card-link-arrow">&#x2192;</span>
+</a>

@@ -1,0 +1,33 @@
+{{ $id := .Get "id" | default (printf "tabs-%d" .Ordinal) }}
+<div class="tabs" id="{{ $id }}">
+  {{ .Inner }}
+</div>
+<script>
+(function(){
+  var container = document.getElementById('{{ $id }}');
+  if (!container) return;
+  var buttons = Array.from(container.querySelectorAll('.tab-button'));
+  var panels = Array.from(container.querySelectorAll('.tab-panel'));
+  if (buttons.length === 0) return;
+
+  /* Group buttons into a bar at the top */
+  var bar = document.createElement('div');
+  bar.className = 'tab-bar';
+  buttons.forEach(function(btn) { bar.appendChild(btn); });
+  container.insertBefore(bar, container.firstChild);
+
+  /* Activate first tab */
+  buttons[0].classList.add('active');
+  panels[0].classList.add('active');
+
+  /* Click handlers */
+  buttons.forEach(function(btn, i) {
+    btn.addEventListener('click', function() {
+      buttons.forEach(function(b) { b.classList.remove('active'); });
+      panels.forEach(function(p) { p.classList.remove('active'); });
+      btn.classList.add('active');
+      panels[i].classList.add('active');
+    });
+  });
+})();
+</script>

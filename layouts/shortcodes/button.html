@@ -1,0 +1,8 @@
+{{ $href := .Get "href" }}
+{{ $text := .Get "text" | default "Link" }}
+{{ $style := .Get "style" | default "primary" }}
+{{ $external := strings.HasPrefix $href "http" }}
+<a class="btn btn-{{ $style }}" href="{{ $href | safeURL }}"
+  {{- if $external }} target="_blank" rel="noopener noreferrer"{{ end }}>
+  {{ $text }}{{ if $external }} &#x2197;{{ end }}
+</a>
