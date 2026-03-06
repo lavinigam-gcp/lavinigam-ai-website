@@ -2,3 +2,20 @@
 {{ partial "structured-data/website.html" . }}
 {{ partial "structured-data/article.html" . }}
 {{ partial "structured-data/person.html" . }}
+{{ partial "structured-data/breadcrumb.html" . }}
+
+{{/* Custom styles for shortcodes and render hooks */}}
+<link rel="stylesheet" href="/css/custom.css?v={{ now.Unix }}">
+
+{{/* Light-mode code block override — must be inline to beat PaperMod's bundled !important */}}
+<style>
+  html[data-theme="light"] .post-content .highlight:not(table),
+  html[data-theme="light"] .tab-panel .highlight:not(table) {
+    background: #f6f8fa !important;
+  }
+  html[data-theme="light"] .post-content pre code,
+  html[data-theme="light"] .tab-panel pre code {
+    color: #1f2328 !important;
+    background: #f6f8fa !important;
+  }
+</style>

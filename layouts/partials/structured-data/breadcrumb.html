@@ -1,0 +1,35 @@
+{{- if not .IsHome -}}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "{{ .Site.BaseURL }}"
+    }
+    {{- if .IsPage -}}
+    ,{
+      "@type": "ListItem",
+      "position": 2,
+      "name": {{ .Section | humanize | title | jsonify }},
+      "item": "{{ .Section | absURL }}/"
+    }
+    ,{
+      "@type": "ListItem",
+      "position": 3,
+      "name": {{ .Title | jsonify }}
+    }
+    {{- else if .IsSection -}}
+    ,{
+      "@type": "ListItem",
+      "position": 2,
+      "name": {{ .Title | jsonify }}
+    }
+    {{- end -}}
+  ]
+}
+</script>
+{{- end -}}

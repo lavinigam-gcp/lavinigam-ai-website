@@ -1,0 +1,5 @@
+{{ $name := .Get "name" }}
+<button class="tab-button" type="button">{{ $name }}</button>
+<div class="tab-panel">
+  {{ .Inner | .Page.RenderString }}
+</div>
