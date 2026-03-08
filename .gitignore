@@ -38,6 +38,11 @@ content/posts/test_post/
 *service-account*.json
 *-creds.json
 
+# Python
+.venv/
+__pycache__/
+*.pyc
+
 # Analytics output
 analytics/reports/*.csv
 analytics/reports/*.json
