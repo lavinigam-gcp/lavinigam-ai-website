@@ -37,3 +37,7 @@ content/posts/test_post/
 .env.local
 *service-account*.json
 *-creds.json
+
+# Analytics output
+analytics/reports/*.csv
+analytics/reports/*.json
