@@ -245,3 +245,145 @@ def write_section_data(service, insert_row: int, rows: list[list]) -> None:
         valueInputOption="USER_ENTERED",
         body={"values": rows},
     ).execute()
+
+
+# ---------------------------------------------------------------------------
+# Formatting helpers
+# ---------------------------------------------------------------------------
+
+def _cell_range(sheet_id: int, row_start: int, row_end: int,
+                col_start: int = 0, col_end: int | None = None) -> dict:
+    """Build a GridRange dict (all indices 0-based, end exclusive)."""
+    r = {
+        "sheetId": sheet_id,
+        "startRowIndex": row_start,
+        "endRowIndex": row_end,
+        "startColumnIndex": col_start,
+    }
+    if col_end is not None:
+        r["endColumnIndex"] = col_end
+    return r
+
+
+def _repeat_cell(sheet_id: int, row: int, col_start: int, col_end: int,
+                 bg: dict, fg: dict, bold: bool = False, font_size: int = 10) -> dict:
+    """Build a RepeatCellRequest for a single row range."""
+    return {
+        "repeatCell": {
+            "range": _cell_range(sheet_id, row, row + 1, col_start, col_end),
+            "cell": {"userEnteredFormat": {
+                "backgroundColor": bg,
+                "textFormat": {"foregroundColor": fg, "bold": bold, "fontSize": font_size},
+            }},
+            "fields": "userEnteredFormat(backgroundColor,textFormat)",
+        }
+    }
+
+
+def format_section(service, sheet_id: int, insert_row: int, num_data_rows: int) -> None:
+    """Apply all visual formatting for a section starting at insert_row."""
+    section_row = insert_row          # section header row
+    col_hdr_row = insert_row + 1      # column header row
+    data_start  = insert_row + 2      # first data row
+    data_end    = data_start + num_data_rows
+
+    requests = [
+        # Section header: blue bg, white bold text.
+        _repeat_cell(sheet_id, section_row, 0, NUM_COLS,
+                     COLOR_SECTION_BG, COLOR_WHITE_TEXT, bold=True),
+        # Merge section header across all columns.
+        {"mergeCells": {
+            "range": _cell_range(sheet_id, section_row, section_row + 1, 0, NUM_COLS),
+            "mergeType": "MERGE_ALL",
+        }},
+        # Column header row: light blue bg, dark bold text.
+        _repeat_cell(sheet_id, col_hdr_row, 0, NUM_COLS,
+                     COLOR_HEADER_BG, COLOR_DARK_TEXT, bold=True),
+    ]
+
+    # Alternating data row colors.
+    for i in range(num_data_rows):
+        row = data_start + i
+        bg = COLOR_WHITE if i % 2 == 0 else COLOR_ROW_ALT
+        requests.append(_repeat_cell(sheet_id, row, 0, NUM_COLS, bg, COLOR_DARK_TEXT))
+
+    # Column widths: post column wider, metric columns narrower.
+    requests += [
+        {"updateDimensionProperties": {
+            "range": {"sheetId": sheet_id, "dimension": "COLUMNS",
+                      "startIndex": 0, "endIndex": 1},
+            "properties": {"pixelSize": 280},
+            "fields": "pixelSize",
+        }},
+        {"updateDimensionProperties": {
+            "range": {"sheetId": sheet_id, "dimension": "COLUMNS",
+                      "startIndex": 1, "endIndex": NUM_COLS},
+            "properties": {"pixelSize": 90},
+            "fields": "pixelSize",
+        }},
+    ]
+
+    # Conditional formatting: engagementRate (column F = index 5).
+    eng_range = _cell_range(sheet_id, data_start, data_end, 5, 6)
+    requests += [
+        {"addConditionalFormatRule": {"rule": {
+            "ranges": [eng_range],
+            "booleanRule": {
+                "condition": {"type": "NUMBER_GREATER_THAN_EQ",
+                              "values": [{"userEnteredValue": "0.6"}]},
+                "format": {"backgroundColor": COLOR_GREEN},
+            },
+        }, "index": 0}},
+        {"addConditionalFormatRule": {"rule": {
+            "ranges": [eng_range],
+            "booleanRule": {
+                "condition": {"type": "NUMBER_BETWEEN",
+                              "values": [{"userEnteredValue": "0.4"},
+                                         {"userEnteredValue": "0.6"}]},
+                "format": {"backgroundColor": COLOR_YELLOW},
+            },
+        }, "index": 1}},
+        {"addConditionalFormatRule": {"rule": {
+            "ranges": [eng_range],
+            "booleanRule": {
+                "condition": {"type": "NUMBER_LESS",
+                              "values": [{"userEnteredValue": "0.4"}]},
+                "format": {"backgroundColor": COLOR_RED},
+            },
+        }, "index": 2}},
+    ]
+
+    # Conditional formatting: bounceRate (column G = index 6).
+    bounce_range = _cell_range(sheet_id, data_start, data_end, 6, 7)
+    requests += [
+        {"addConditionalFormatRule": {"rule": {
+            "ranges": [bounce_range],
+            "booleanRule": {
+                "condition": {"type": "NUMBER_LESS_THAN_EQ",
+                              "values": [{"userEnteredValue": "0.4"}]},
+                "format": {"backgroundColor": COLOR_GREEN},
+            },
+        }, "index": 3}},
+        {"addConditionalFormatRule": {"rule": {
+            "ranges": [bounce_range],
+            "booleanRule": {
+                "condition": {"type": "NUMBER_BETWEEN",
+                              "values": [{"userEnteredValue": "0.4"},
+                                         {"userEnteredValue": "0.6"}]},
+                "format": {"backgroundColor": COLOR_YELLOW},
+            },
+        }, "index": 4}},
+        {"addConditionalFormatRule": {"rule": {
+            "ranges": [bounce_range],
+            "booleanRule": {
+                "condition": {"type": "NUMBER_GREATER",
+                              "values": [{"userEnteredValue": "0.6"}]},
+                "format": {"backgroundColor": COLOR_RED},
+            },
+        }, "index": 5}},
+    ]
+
+    service.spreadsheets().batchUpdate(
+        spreadsheetId=SPREADSHEET_ID,
+        body={"requests": requests},
+    ).execute()
