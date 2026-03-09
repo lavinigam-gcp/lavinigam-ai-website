@@ -37,3 +37,14 @@ content/posts/test_post/
 .env.local
 *service-account*.json
 *-creds.json
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Analytics
+analytics/.credentials/
+analytics/config.py
+analytics/reports/*.csv
+analytics/reports/*.json
