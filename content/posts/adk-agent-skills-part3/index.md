@@ -17,6 +17,7 @@ cover:
 > **This is Part 3 of a 3-part series** on building ADK agents with reusable skills.
 > [← Part 1: What Are Agent Skills?]({{< relref "/posts/adk-agent-skills-part1" >}})
 > [← Part 2: File-Based, External Skills, and SkillToolset Internals]({{< relref "/posts/adk-agent-skills-part2" >}})
+> **See also:** [5 SKILL.md Design Patterns Every ADK Developer Should Know →]({{< relref "/posts/adk-skill-design-patterns" >}})
 
 In Parts 1 and 2, we built ADK skills that exist — an inline SEO checklist, file-based and external skills loaded from directories, all wired into a `SkillToolset` with three auto-generated tools. Part 3 closes the loop: the agent writes its own skills.
 
