@@ -17,6 +17,7 @@ cover:
 > **This is Part 1 of a 3-part series** on building ADK agents with reusable skills.
 > [Part 2: File-Based, External Skills, and SkillToolset Internals →]({{< relref "/posts/adk-agent-skills-part2" >}})
 > [Part 3: Skills That Write Skills — Self-Extending ADK Agents →]({{< relref "/posts/adk-agent-skills-part3" >}})
+> **See also:** [5 SKILL.md Design Patterns Every ADK Developer Should Know →]({{< relref "/posts/adk-skill-design-patterns" >}})
 
 I'd been hearing about Agent Skills for weeks — the idea of giving agents modular knowledge they load on demand instead of cramming everything into a system prompt. I'd even used a few with Gemini CLI. But scrolling through tutorials and X threads, I kept hitting the same question: how far can this pattern actually go with Google's Agent Development Kit (ADK)?
 

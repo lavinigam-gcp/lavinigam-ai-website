@@ -2,7 +2,7 @@
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "Article",
+  "@type": {{ if .Params.techArticle }}"TechArticle"{{ else }}"Article"{{ end }},
   "headline": {{ .Title | jsonify }},
   "description": {{ .Description | default .Summary | jsonify }},
   "datePublished": "{{ .Date.Format "2006-01-02T15:04:05Z07:00" }}",

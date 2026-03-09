@@ -17,6 +17,7 @@ cover:
 > **This is Part 2 of a 3-part series** on building ADK agents with reusable skills.
 > [← Part 1: What Are Agent Skills?]({{< relref "/posts/adk-agent-skills-part1" >}})
 > [Part 3: Skills That Write Skills — Self-Extending ADK Agents →]({{< relref "/posts/adk-agent-skills-part3" >}})
+> **See also:** [5 SKILL.md Design Patterns Every ADK Developer Should Know →]({{< relref "/posts/adk-skill-design-patterns" >}})
 
 In Part 1, we covered progressive disclosure — the L1/L2/L3 pattern that keeps agent context small — and built an inline SEO checklist skill in Python. Inline skills are fast to write, but the knowledge lives only in your code. This post moves beyond Python strings into ADK skills that live on disk, come from community repos, and get wired into a working agent.
 

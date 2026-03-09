@@ -12,7 +12,7 @@ pagination:
 enableEmoji: true
 
 # Enable robots.txt generation
-enableRobotsTXT: false
+enableRobotsTXT: true
 
 # Build settings
 buildDrafts: false
