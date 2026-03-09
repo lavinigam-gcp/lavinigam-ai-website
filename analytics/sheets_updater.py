@@ -121,3 +121,72 @@ def ensure_analytics_tab(service) -> int:
 
     new_sheet_id: int = response["replies"][0]["addSheet"]["properties"]["sheetId"]
     return new_sheet_id
+
+
+# ---------------------------------------------------------------------------
+# Section layout manager
+# ---------------------------------------------------------------------------
+
+def _read_col_a(service) -> list[str]:
+    """Read all values in column A of the Analytics tab."""
+    result = service.spreadsheets().values().get(
+        spreadsheetId=SPREADSHEET_ID,
+        range=f"{SHEET_NAME}!A:A"
+    ).execute()
+    return [row[0] if row else "" for row in result.get("values", [])]
+
+
+def find_section_start(service, period: str) -> int | None:
+    """Return 0-indexed row of the section header for `period`, or None."""
+    marker = SECTION_MARKER.format(period=period)
+    col_a = _read_col_a(service)
+    for i, cell in enumerate(col_a):
+        if cell.startswith(marker):
+            return i
+    return None
+
+
+def _find_section_end(col_a: list[str], start: int) -> int:
+    """Return 0-indexed row just past the last data row of the section."""
+    for i in range(start + 1, len(col_a)):
+        if col_a[i].startswith("──"):  # next section header
+            return i
+    return len(col_a)
+
+
+def clear_section(service, sheet_id: int, period: str) -> int | None:
+    """Delete the rows of an existing period section. Returns start row or None if not found."""
+    col_a = _read_col_a(service)
+    marker = SECTION_MARKER.format(period=period)
+    start = None
+    for i, cell in enumerate(col_a):
+        if cell.startswith(marker):
+            start = i
+            break
+    if start is None:
+        return None
+
+    end = _find_section_end(col_a, start)
+    service.spreadsheets().batchUpdate(
+        spreadsheetId=SPREADSHEET_ID,
+        body={"requests": [{
+            "deleteDimension": {
+                "range": {
+                    "sheetId": sheet_id,
+                    "dimension": "ROWS",
+                    "startIndex": start,
+                    "endIndex": end,
+                }
+            }
+        }]}
+    ).execute()
+    return start
+
+
+def next_available_row(service) -> int:
+    """Return 0-indexed index of first row to insert a new section."""
+    col_a = _read_col_a(service)
+    for i in range(len(col_a) - 1, -1, -1):
+        if col_a[i].strip():
+            return i + 2  # +1 for blank separator, +1 for next row
+    return 3  # Default: after title (row 0), summary (row 1), blank (row 2)
