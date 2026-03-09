@@ -77,6 +77,10 @@ params:
   # Use Hugo's syntax highlighter
   UseHugoToc: true
 
+  # Table of Contents — enabled globally, individual posts can override with showToc: false
+  ShowToc: true
+  TocOpen: false
+
   # Display full text in RSS
   ShowFullTextinRSS: true
 
@@ -144,6 +148,10 @@ services:
 
 # Markup configuration
 markup:
+  tableOfContents:
+    startLevel: 2
+    endLevel: 4
+    ordered: false
   goldmark:
     renderer:
       unsafe: true
