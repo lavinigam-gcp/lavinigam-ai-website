@@ -5,6 +5,8 @@ Analytics tab, and exposes the shared constants (color palette,
 column headers, spreadsheet ID) used by all subsequent tasks.
 """
 
+from datetime import datetime
+
 from googleapiclient.discovery import build
 
 from analytics.auth import get_credentials
@@ -190,3 +192,56 @@ def next_available_row(service) -> int:
         if col_a[i].strip():
             return i + 2  # +1 for blank separator, +1 for next row
     return 3  # Default: after title (row 0), summary (row 1), blank (row 2)
+
+
+# ---------------------------------------------------------------------------
+# Section data builder and writer
+# ---------------------------------------------------------------------------
+
+def build_section_rows(
+    period: str,
+    start_date: str,
+    end_date: str,
+    overview_rows: list[dict],
+    geo_summary: dict,
+) -> list[list]:
+    """Build the list of rows to write for a period section.
+
+    Returns: [section_header_row, column_headers_row, ...data_rows]
+    """
+    section_header = f"{SECTION_MARKER.format(period=period)} ({start_date} → {end_date})"
+
+    data_rows = []
+    for row in overview_rows:
+        path = row.get("pagePath", "")
+        geo = geo_summary.get(path, {})
+        dur = float(row.get("averageSessionDuration", 0))
+        data_rows.append([
+            path,
+            row.get("screenPageViews", ""),
+            row.get("sessions", ""),
+            row.get("totalUsers", ""),
+            row.get("newUsers", ""),
+            round(float(row.get("engagementRate", 0)), 2),
+            round(float(row.get("bounceRate", 0)), 2),
+            round(dur, 1),
+            round(float(row.get("screenPageViewsPerSession", 0)), 2),
+            row.get("engagedSessions", ""),
+            row.get("eventCount", ""),
+            geo.get("topCountries", ""),
+            geo.get("desktopPct", ""),
+            geo.get("mobilePct", ""),
+        ])
+
+    return [[section_header]] + [COLUMN_HEADERS] + data_rows
+
+
+def write_section_data(service, insert_row: int, rows: list[list]) -> None:
+    """Write rows starting at insert_row (0-indexed) into the Analytics tab."""
+    start_a1 = f"{SHEET_NAME}!A{insert_row + 1}"
+    service.spreadsheets().values().update(
+        spreadsheetId=SPREADSHEET_ID,
+        range=start_a1,
+        valueInputOption="USER_ENTERED",
+        body={"values": rows},
+    ).execute()
