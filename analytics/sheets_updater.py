@@ -476,6 +476,11 @@ def _fetch_analytics_json(period: str) -> dict | None:
         text=True,
         env={**os.environ, "PYTHONPATH": "."},
     )
+    if result.returncode != 0:
+        print(f"analytics.report failed (exit {result.returncode}):")
+        if result.stderr:
+            print(result.stderr.strip())
+        return None
     # analytics.report (via rich) may prepend a header line and ANSI codes.
     # Strip ANSI codes and find the JSON object.
     clean = re.sub(r"\x1b\[[0-9;]*m", "", result.stdout)
