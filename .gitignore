@@ -10,7 +10,10 @@ Thumbs.db
 # IDE files
 .vscode/
 .idea/
-.claude/
+# .claude/ — ignore local/private state, intentionally track skills/ (shared prompts)
+.claude/settings.local.json
+.claude/todos/
+.claude/memory/
 *.swp
 *.swo
 *~
