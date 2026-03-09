@@ -16,12 +16,12 @@ from datetime import datetime
 from googleapiclient.discovery import build
 
 from analytics.auth import get_credentials
+from analytics.config import (
+    EXCLUDED_SLUGS,
+    POSTS_PATH_PREFIX,
+    SHEETS_SPREADSHEET_ID as SPREADSHEET_ID,
+)
 
-# ---------------------------------------------------------------------------
-# Spreadsheet identity
-# ---------------------------------------------------------------------------
-
-SPREADSHEET_ID = "1jQtCV0r29Ny2FF0KvA6HNPg3ZN62nBBHKECtdDNtLZo"
 SHEET_NAME = "Analytics"
 
 # Template for section header rows inserted before each period's data.
@@ -491,6 +491,17 @@ def _fetch_analytics_json(period: str) -> dict | None:
         return None
 
 
+_CLEAN_SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]*[a-z0-9]$")
+
+
+def _is_valid_post_path(path: str) -> bool:
+    """Return True if path is a clean, non-excluded blog post path."""
+    if not path.startswith(POSTS_PATH_PREFIX) or path == POSTS_PATH_PREFIX:
+        return False
+    slug = path.removeprefix(POSTS_PATH_PREFIX).strip("/")
+    return bool(_CLEAN_SLUG_RE.match(slug)) and slug not in EXCLUDED_SLUGS
+
+
 def _build_geo_summary(geo_rows: list[dict]) -> dict:
     """Build per-post geo/device summary dict keyed by pagePath."""
     by_post: dict[str, list[dict]] = defaultdict(list)
@@ -533,7 +544,8 @@ def update_analytics_sheet(period: str = "7d") -> None:
 
     start_date  = data.get("startDate", "")
     end_date    = data.get("endDate", "")
-    overview    = data["ga4"]["overview"]
+    overview    = [r for r in data["ga4"]["overview"]
+                   if _is_valid_post_path(r.get("pagePath", ""))]
     geo_rows    = data["ga4"].get("geo_device", [])
     geo_summary = _build_geo_summary(geo_rows)
 

@@ -9,8 +9,10 @@ from datetime import date, timedelta
 GA4_PROPERTY_ID = "YOUR_GA4_PROPERTY_ID"
 GA4_PROPERTY = f"properties/{GA4_PROPERTY_ID}"
 GSC_SITE_URL = "sc-domain:yourdomain.com"
+SHEETS_SPREADSHEET_ID = "YOUR_SPREADSHEET_ID"  # content tracker sheet
 POSTS_PATH_PREFIX = "/posts/"
 REPORTS_DIR = "analytics/reports"
+EXCLUDED_SLUGS = {"test_post", "hello-world-building-in-public"}  # slugs to exclude from analytics output
 
 PERIODS = {
     "1d": 1,
