@@ -387,3 +387,71 @@ def format_section(service, sheet_id: int, insert_row: int, num_data_rows: int) 
         spreadsheetId=SPREADSHEET_ID,
         body={"requests": requests},
     ).execute()
+
+
+# ---------------------------------------------------------------------------
+# Title block and summary row
+# ---------------------------------------------------------------------------
+
+def write_title_block(service, sheet_id: int) -> None:
+    """Write the title row and ensure summary row exists (idempotent)."""
+    result = service.spreadsheets().values().get(
+        spreadsheetId=SPREADSHEET_ID,
+        range=f"{SHEET_NAME}!A1:A3",
+    ).execute()
+    existing = result.get("values", [])
+
+    title_val = "📊 Analytics Dashboard"
+    # Only write if title row is missing or wrong.
+    if not existing or not existing[0] or existing[0][0] != title_val:
+        service.spreadsheets().values().update(
+            spreadsheetId=SPREADSHEET_ID,
+            range=f"{SHEET_NAME}!A1",
+            valueInputOption="USER_ENTERED",
+            body={"values": [[title_val], [""], [""]]},
+        ).execute()
+        service.spreadsheets().batchUpdate(
+            spreadsheetId=SPREADSHEET_ID,
+            body={"requests": [
+                _repeat_cell(sheet_id, 0, 0, NUM_COLS,
+                             COLOR_TITLE_BG, COLOR_WHITE_TEXT, bold=True, font_size=14),
+                {"mergeCells": {
+                    "range": _cell_range(sheet_id, 0, 1, 0, NUM_COLS),
+                    "mergeType": "MERGE_ALL",
+                }},
+                {"updateSheetProperties": {
+                    "properties": {
+                        "sheetId": sheet_id,
+                        "gridProperties": {"frozenRowCount": 1},
+                    },
+                    "fields": "gridProperties.frozenRowCount",
+                }},
+            ]},
+        ).execute()
+
+
+def update_summary_row(service, period: str, start_date: str, end_date: str) -> None:
+    """Update row 2 with the latest run timestamp for this period."""
+    result = service.spreadsheets().values().get(
+        spreadsheetId=SPREADSHEET_ID,
+        range=f"{SHEET_NAME}!A2",
+    ).execute()
+    current = result.get("values", [[""]])[0][0] if result.get("values") else ""
+
+    # Parse existing "period: value" pairs separated by " | ".
+    parts: dict[str, str] = {}
+    for part in current.split(" | "):
+        if ": " in part:
+            k, v = part.split(": ", 1)
+            parts[k.strip()] = v.strip()
+
+    timestamp = datetime.now().strftime("%b %-d, %Y %H:%M")
+    parts[period] = f"updated {timestamp} ({start_date} → {end_date})"
+    summary = " | ".join(f"{k}: {v}" for k, v in sorted(parts.items()))
+
+    service.spreadsheets().values().update(
+        spreadsheetId=SPREADSHEET_ID,
+        range=f"{SHEET_NAME}!A2",
+        valueInputOption="USER_ENTERED",
+        body={"values": [[summary]]},
+    ).execute()
