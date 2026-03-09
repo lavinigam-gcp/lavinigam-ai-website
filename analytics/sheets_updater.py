@@ -5,6 +5,12 @@ Analytics tab, and exposes the shared constants (color palette,
 column headers, spreadsheet ID) used by all subsequent tasks.
 """
 
+import json
+import os
+import re
+import subprocess
+import sys
+from collections import defaultdict
 from datetime import datetime
 
 from googleapiclient.discovery import build
@@ -455,3 +461,100 @@ def update_summary_row(service, period: str, start_date: str, end_date: str) -> 
         valueInputOption="USER_ENTERED",
         body={"values": [[summary]]},
     ).execute()
+
+
+# ---------------------------------------------------------------------------
+# Orchestrator
+# ---------------------------------------------------------------------------
+
+def _fetch_analytics_json(period: str) -> dict | None:
+    """Run analytics.report --format json and return parsed JSON output."""
+    result = subprocess.run(
+        [sys.executable, "-m", "analytics.report",
+         "--source", "ga4", "--format", "json", "--period", period],
+        capture_output=True,
+        text=True,
+        env={**os.environ, "PYTHONPATH": "."},
+    )
+    # analytics.report (via rich) may prepend a header line and ANSI codes.
+    # Strip ANSI codes and find the JSON object.
+    clean = re.sub(r"\x1b\[[0-9;]*m", "", result.stdout)
+    try:
+        start = clean.index("{")
+        return json.loads(clean[start:])
+    except (ValueError, json.JSONDecodeError):
+        return None
+
+
+def _build_geo_summary(geo_rows: list[dict]) -> dict:
+    """Build per-post geo/device summary dict keyed by pagePath."""
+    by_post: dict[str, list[dict]] = defaultdict(list)
+    for row in geo_rows:
+        by_post[row.get("pagePath", "")].append(row)
+
+    summary = {}
+    for path, rows in by_post.items():
+        total = sum(float(r.get("sessions", 0)) for r in rows)
+        countries: dict[str, float] = defaultdict(float)
+        devices: dict[str, float] = defaultdict(float)
+        for r in rows:
+            s = float(r.get("sessions", 0))
+            c = r.get("country", "")
+            d = r.get("deviceCategory", "")
+            if c:
+                countries[c] += s
+            if d:
+                devices[d] += s
+        top3 = sorted(countries.items(), key=lambda x: -x[1])[:3]
+        country_str = (
+            ", ".join(f"{c} ({s / total * 100:.0f}%)" for c, s in top3)
+            if total > 0 else ""
+        )
+        summary[path] = {
+            "topCountries": country_str,
+            "desktopPct": f"{devices.get('desktop', 0) / total * 100:.1f}" if total else "0",
+            "mobilePct":  f"{devices.get('mobile',  0) / total * 100:.1f}" if total else "0",
+        }
+    return summary
+
+
+def update_analytics_sheet(period: str = "7d") -> None:
+    """Main entry point. Fetch GA4 data and upsert the period section in the Analytics tab."""
+    print(f"Fetching GA4 data for period: {period}...")
+    data = _fetch_analytics_json(period)
+    if not data or not data.get("ga4", {}).get("overview"):
+        print("No GA4 data returned. Sheet not updated.")
+        return
+
+    start_date  = data.get("startDate", "")
+    end_date    = data.get("endDate", "")
+    overview    = data["ga4"]["overview"]
+    geo_rows    = data["ga4"].get("geo_device", [])
+    geo_summary = _build_geo_summary(geo_rows)
+
+    print("Connecting to Google Sheets...")
+    service  = _get_service()
+    sheet_id = ensure_analytics_tab(service)
+
+    # Write title block (idempotent — skips if already present).
+    write_title_block(service, sheet_id)
+
+    # Clear existing section for this period, or find next available row.
+    cleared_at = clear_section(service, sheet_id, period)
+    insert_row = cleared_at if cleared_at is not None else next_available_row(service)
+
+    # Write data rows.
+    rows = build_section_rows(period, start_date, end_date, overview, geo_summary)
+    print(f"Writing {len(rows)} rows at sheet row {insert_row + 1}...")
+    write_section_data(service, insert_row, rows)
+
+    # Apply formatting.
+    num_data_rows = len(overview)
+    print("Applying formatting...")
+    format_section(service, sheet_id, insert_row, num_data_rows)
+
+    # Update summary row.
+    update_summary_row(service, period, start_date, end_date)
+
+    print(f"Done. Analytics tab updated for period: {period}")
+    print(f"https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID}")
