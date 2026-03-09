@@ -3,7 +3,8 @@
 import csv
 import json
 import os
-from datetime import date
+from collections import defaultdict
+from datetime import date, datetime
 
 from rich.console import Console
 from rich.table import Table
@@ -215,52 +216,193 @@ def print_gsc_device_country(rows: list[dict], period: str) -> None:
     console.print(table)
 
 
+# -- Number formatting --
+
+
+def _round2(value: str) -> str:
+    """Round a numeric string to 2 decimal places, drop trailing zeros."""
+    try:
+        v = float(value)
+        if v == int(v):
+            return str(int(v))
+        return f"{v:.2f}"
+    except (ValueError, TypeError):
+        return value
+
+
+def _round_row(row: dict) -> dict:
+    """Round all numeric values in a row to 2 decimal places."""
+    result = {}
+    for k, v in row.items():
+        if isinstance(v, (int, float)):
+            result[k] = _round2(str(v))
+        elif isinstance(v, str):
+            try:
+                float(v)
+                result[k] = _round2(v)
+            except ValueError:
+                result[k] = v
+        else:
+            result[k] = v
+    return result
+
+
 # -- JSON output --
 
 
-def print_json(ga4_data: dict | None, gsc_data: dict | None, period: str) -> None:
+def print_json(
+    ga4_data: dict | None,
+    gsc_data: dict | None,
+    period: str,
+    start_date: str = "",
+    end_date: str = "",
+) -> None:
     """Print combined results as JSON to stdout."""
-    output = {"period": period}
+    output = {
+        "period": period,
+        "startDate": start_date,
+        "endDate": end_date,
+        "fetchedAt": datetime.now().isoformat(timespec="seconds"),
+    }
     if ga4_data is not None:
-        output["ga4"] = ga4_data
+        output["ga4"] = {
+            name: [_round_row(r) for r in rows]
+            for name, rows in ga4_data.items()
+        }
     if gsc_data is not None:
-        output["gsc"] = gsc_data
+        output["gsc"] = {
+            name: [_round_row(r) for r in rows]
+            for name, rows in gsc_data.items()
+        }
     console.print_json(json.dumps(output, default=str))
+
+
+# -- Geo summary helpers --
+
+
+def _summarize_geo(geo_rows: list[dict]) -> dict[str, dict]:
+    """Build per-post geo/device summary from geo_device rows.
+
+    Returns {pagePath: {"topCountries": "India (43%), US (21%)", "desktopPct": 82.5, ...}}
+    """
+    by_post: dict[str, list[dict]] = defaultdict(list)
+    for row in geo_rows:
+        by_post[row.get("pagePath", "")].append(row)
+
+    summaries = {}
+    for path, rows in by_post.items():
+        total_sessions = sum(float(r.get("sessions", 0)) for r in rows)
+
+        # Country breakdown.
+        country_sessions: dict[str, float] = defaultdict(float)
+        device_sessions: dict[str, float] = defaultdict(float)
+        for r in rows:
+            sess = float(r.get("sessions", 0))
+            country = r.get("country", "")
+            device = r.get("deviceCategory", "")
+            if country:
+                country_sessions[country] += sess
+            if device:
+                device_sessions[device] += sess
+
+        # Top 3 countries.
+        top_countries = sorted(country_sessions.items(), key=lambda x: -x[1])[:3]
+        if total_sessions > 0:
+            country_str = ", ".join(
+                f"{c} ({s/total_sessions*100:.0f}%)" for c, s in top_countries
+            )
+        else:
+            country_str = ""
+
+        # Device split.
+        desktop_pct = (device_sessions.get("desktop", 0) / total_sessions * 100) if total_sessions else 0
+        mobile_pct = (device_sessions.get("mobile", 0) / total_sessions * 100) if total_sessions else 0
+        tablet_pct = (device_sessions.get("tablet", 0) / total_sessions * 100) if total_sessions else 0
+
+        summaries[path] = {
+            "topCountries": country_str,
+            "desktopPct": f"{desktop_pct:.1f}",
+            "mobilePct": f"{mobile_pct:.1f}",
+            "tabletPct": f"{tablet_pct:.1f}",
+        }
+    return summaries
 
 
 # -- CSV saving --
 
 
-def _save_csv(rows: list[dict], filename: str) -> str:
-    """Save rows to CSV. Returns the file path."""
-    os.makedirs(REPORTS_DIR, exist_ok=True)
-    filepath = os.path.join(REPORTS_DIR, filename)
-    if not rows:
-        return filepath
-    with open(filepath, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=rows[0].keys())
-        writer.writeheader()
-        writer.writerows(rows)
-    return filepath
-
-
 def save_all_csv(
-    ga4_data: dict | None, gsc_data: dict | None, period: str
+    ga4_data: dict | None,
+    gsc_data: dict | None,
+    period: str,
+    start_date: str = "",
+    end_date: str = "",
 ) -> list[str]:
-    """Save all report sections as CSVs. Returns list of saved file paths."""
+    """Save a single consolidated CSV per source. Returns list of saved file paths."""
+    os.makedirs(REPORTS_DIR, exist_ok=True)
     today = date.today().isoformat()
+    fetched_at = datetime.now().isoformat(timespec="seconds")
     saved = []
 
-    if ga4_data:
-        for name, rows in ga4_data.items():
-            if rows:
-                path = _save_csv(rows, f"{today}-ga4-{name}-{period}.csv")
-                saved.append(path)
+    if ga4_data and ga4_data.get("overview"):
+        # Build geo summary lookup.
+        geo_summary = _summarize_geo(ga4_data.get("geo_device", []))
 
-    if gsc_data:
-        for name, rows in gsc_data.items():
-            if rows:
-                path = _save_csv(rows, f"{today}-gsc-{name}-{period}.csv")
-                saved.append(path)
+        # Consolidated columns.
+        fieldnames = [
+            "pagePath", "screenPageViews", "sessions", "totalUsers", "newUsers",
+            "engagementRate", "bounceRate", "averageSessionDuration",
+            "screenPageViewsPerSession", "engagedSessions", "eventCount",
+            "topCountries", "desktopPct", "mobilePct", "tabletPct",
+            "period", "startDate", "endDate", "fetchedAt",
+        ]
+
+        rows = []
+        for row in ga4_data["overview"]:
+            rounded = _round_row(row)
+            path = rounded.get("pagePath", "")
+            geo = geo_summary.get(path, {})
+            rows.append({
+                **{k: rounded.get(k, "") for k in fieldnames[:11]},
+                "topCountries": geo.get("topCountries", ""),
+                "desktopPct": geo.get("desktopPct", ""),
+                "mobilePct": geo.get("mobilePct", ""),
+                "tabletPct": geo.get("tabletPct", ""),
+                "period": period,
+                "startDate": start_date,
+                "endDate": end_date,
+                "fetchedAt": fetched_at,
+            })
+
+        filepath = os.path.join(REPORTS_DIR, f"{today}-ga4-report-{period}.csv")
+        with open(filepath, "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(rows)
+        saved.append(filepath)
+
+    if gsc_data and gsc_data.get("search_performance"):
+        fieldnames = [
+            "page", "clicks", "impressions", "ctr", "position",
+            "period", "startDate", "endDate", "fetchedAt",
+        ]
+
+        rows = []
+        for row in gsc_data["search_performance"]:
+            rounded = _round_row(row)
+            rows.append({
+                **{k: rounded.get(k, "") for k in fieldnames[:5]},
+                "period": period,
+                "startDate": start_date,
+                "endDate": end_date,
+                "fetchedAt": fetched_at,
+            })
+
+        filepath = os.path.join(REPORTS_DIR, f"{today}-gsc-report-{period}.csv")
+        with open(filepath, "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(rows)
+        saved.append(filepath)
 
     return saved
