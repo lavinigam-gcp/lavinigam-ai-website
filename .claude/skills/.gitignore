@@ -1,0 +1,5 @@
+# Ignore all local/plugin skills by default; only track project-specific ones.
+*
+!.gitignore
+!analytics-update-stats/
+!analytics-update-stats/**

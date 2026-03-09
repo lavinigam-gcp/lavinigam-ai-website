@@ -2,6 +2,7 @@
 public/
 resources/
 .hugo_build.lock
+.hugo_build.lock_hidden_message
 
 # OS files
 .DS_Store
@@ -11,6 +12,7 @@ Thumbs.db
 .vscode/
 .idea/
 # .claude/ — ignore local/private state, intentionally track skills/ (shared prompts)
+.claude/settings.json
 .claude/settings.local.json
 .claude/todos/
 .claude/memory/
@@ -20,6 +22,8 @@ Thumbs.db
 
 # Node modules (if using npm for dependencies)
 node_modules/
+package.json
+package-lock.json
 
 # Temporary files
 *.log
