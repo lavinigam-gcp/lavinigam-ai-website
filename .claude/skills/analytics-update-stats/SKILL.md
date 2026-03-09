@@ -23,7 +23,23 @@ or directly:
 ## Input
 
 Parse the period from the user's message. Default: `7d`.
-Valid: `1d`, `3d`, `7d`, `30d`, `90d`, `365d`
+Valid: `1d`, `3d`, `7d`, `14d`, `21d`, `28d`, `30d`, `90d`, `365d`
+
+## Weekly tracking cadence
+
+Each period overwrites only its own section — running different periods builds up a
+cumulative view of post performance since tracking started:
+
+| Week | Command | GA4 window |
+|------|---------|------------|
+| Week 1 | `make analytics-sheets PERIOD=7d` | last 7 days |
+| Week 2 | `make analytics-sheets PERIOD=14d` | last 14 days (includes week 1) |
+| Week 3 | `make analytics-sheets PERIOD=21d` | last 21 days (includes weeks 1–2) |
+| Week 4 | `make analytics-sheets PERIOD=28d` | last 28 days (full month) |
+
+After week 4, reset: run `7d` again for the next cycle. Each section stays in the sheet
+until overwritten by the same period key, so at any point you can see all periods run
+as separate blocks — each one a cumulative window from when you started tracking.
 
 ## What it does
 
