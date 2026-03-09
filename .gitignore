@@ -10,7 +10,9 @@ Thumbs.db
 # IDE files
 .vscode/
 .idea/
-.claude/
+.claude/settings.local.json
+.claude/todos/
+.claude/memory/
 *.swp
 *.swo
 *~
