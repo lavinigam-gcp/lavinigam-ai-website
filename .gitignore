@@ -45,5 +45,6 @@ __pycache__/
 
 # Analytics
 analytics/.credentials/
+analytics/config.py
 analytics/reports/*.csv
 analytics/reports/*.json

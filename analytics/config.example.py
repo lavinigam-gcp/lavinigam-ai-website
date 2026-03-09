@@ -1,10 +1,14 @@
-"""Analytics configuration — property IDs, site URL, period presets."""
+"""Analytics configuration — property IDs, site URL, period presets.
+
+Copy this file to config.py and fill in your values:
+    cp analytics/config.example.py analytics/config.py
+"""
 
 from datetime import date, timedelta
 
-GA4_PROPERTY_ID = "526349541"
+GA4_PROPERTY_ID = "YOUR_GA4_PROPERTY_ID"
 GA4_PROPERTY = f"properties/{GA4_PROPERTY_ID}"
-GSC_SITE_URL = "sc-domain:lavinigam.com"
+GSC_SITE_URL = "sc-domain:yourdomain.com"
 POSTS_PATH_PREFIX = "/posts/"
 REPORTS_DIR = "analytics/reports"
 
