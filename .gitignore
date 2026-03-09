@@ -43,6 +43,7 @@ content/posts/test_post/
 __pycache__/
 *.pyc
 
-# Analytics output
+# Analytics
+analytics/.credentials/
 analytics/reports/*.csv
 analytics/reports/*.json

@@ -1,17 +1,14 @@
 """Google Search Console API client — fetches search performance data."""
 
-import google.auth
 from googleapiclient.discovery import build
 
+from analytics.auth import get_credentials
 from analytics.config import GSC_SITE_URL, POSTS_PATH_PREFIX
 
 
 def _get_service():
-    """Create Search Console service using Application Default Credentials."""
-    credentials, _ = google.auth.default(
-        scopes=["https://www.googleapis.com/auth/webmasters.readonly"]
-    )
-    return build("searchconsole", "v1", credentials=credentials)
+    """Create Search Console service using OAuth2 credentials."""
+    return build("searchconsole", "v1", credentials=get_credentials())
 
 
 def _query(
@@ -30,11 +27,14 @@ def _query(
         "rowLimit": row_limit,
     }
 
-    # Filter to posts or a specific post
+    # Filter to posts or a specific post.
+    # Domain properties (sc-domain:) return full URLs in the page dimension,
+    # so we filter using https://domain/path.
+    site_origin = "https://lavinigam.com"
     page_filter_value = (
-        f"{GSC_SITE_URL.rstrip('/')}{post_path}"
+        f"{site_origin}{post_path}"
         if post_path
-        else f"{GSC_SITE_URL.rstrip('/')}{POSTS_PATH_PREFIX}"
+        else f"{site_origin}{POSTS_PATH_PREFIX}"
     )
     page_filter_operator = "equals" if post_path else "contains"
 

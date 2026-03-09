@@ -25,7 +25,7 @@ preview-deploy:
 
 ## Run analytics report: make analytics [PERIOD=30d] [SOURCE=both] [POST=/posts/foo/] [FORMAT=table] [CSV=1]
 analytics:
-	.venv/bin/python analytics/report.py \
+	PYTHONPATH=. .venv/bin/python analytics/report.py \
 		--source $(or $(SOURCE),both) \
 		--period $(or $(PERIOD),30d) \
 		--format $(or $(FORMAT),table) \

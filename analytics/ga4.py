@@ -1,6 +1,5 @@
 """GA4 Data API client — fetches post-level analytics."""
 
-import google.auth
 from google.analytics.data_v1beta import BetaAnalyticsDataClient
 from google.analytics.data_v1beta.types import (
     BatchRunReportsRequest,
@@ -13,15 +12,13 @@ from google.analytics.data_v1beta.types import (
     RunReportRequest,
 )
 
+from analytics.auth import get_credentials
 from analytics.config import GA4_PROPERTY, POSTS_PATH_PREFIX
 
 
 def _get_client() -> BetaAnalyticsDataClient:
-    """Create GA4 client using Application Default Credentials."""
-    credentials, _ = google.auth.default(
-        scopes=["https://www.googleapis.com/auth/analytics.readonly"]
-    )
-    return BetaAnalyticsDataClient(credentials=credentials)
+    """Create GA4 client using OAuth2 credentials."""
+    return BetaAnalyticsDataClient(credentials=get_credentials())
 
 
 def _posts_filter(post_path: str | None = None) -> FilterExpression:
@@ -64,7 +61,6 @@ def _overview_request(
             Metric(name="bounceRate"),
             Metric(name="averageSessionDuration"),
             Metric(name="screenPageViewsPerSession"),
-            Metric(name="userEngagementDuration"),
             Metric(name="engagedSessions"),
             Metric(name="eventCount"),
         ],

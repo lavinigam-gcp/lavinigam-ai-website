@@ -4,7 +4,7 @@ from datetime import date, timedelta
 
 GA4_PROPERTY_ID = "526349541"
 GA4_PROPERTY = f"properties/{GA4_PROPERTY_ID}"
-GSC_SITE_URL = "https://lavinigam.com/"
+GSC_SITE_URL = "sc-domain:lavinigam.com"
 POSTS_PATH_PREFIX = "/posts/"
 REPORTS_DIR = "analytics/reports"
 
