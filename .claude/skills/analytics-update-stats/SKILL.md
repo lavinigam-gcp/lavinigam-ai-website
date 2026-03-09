@@ -36,4 +36,4 @@ Valid: `1d`, `3d`, `7d`, `30d`, `90d`, `365d`
 ## After running
 
 - Confirm success message and print the spreadsheet URL
-- If the user asks, open: https://docs.google.com/spreadsheets/d/1jQtCV0r29Ny2FF0KvA6HNPg3ZN62nBBHKECtdDNtLZo
+- Always show the spreadsheet URL on success: https://docs.google.com/spreadsheets/d/1jQtCV0r29Ny2FF0KvA6HNPg3ZN62nBBHKECtdDNtLZo
