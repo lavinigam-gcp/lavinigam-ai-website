@@ -5,13 +5,15 @@ lastmod: 2026-03-10T10:00:00+05:30
 draft: false
 description: "Build ADK file-based and external skills, wire them into SkillToolset, and see multi-skill progressive disclosure in action. Hands-on tutorial with code."
 tags: ["adk", "skills", "agents", "skilltoolset", "gemini"]
+techArticle: true
 categories: ["Agent Engineering"]
 series: ["agent-engineering"]
 showToc: true
 TocOpen: false
+comments: true
 cover:
   image: "cover.webp"
-  alt: "ADK SkillToolset architecture: file-based and external skill loading patterns"
+  alt: "ADK SkillToolset architecture: file-based skills, external skills from community repos, and three auto-generated tools for progressive disclosure"
 faq:
   - question: "Can I mix file-based and inline skills in the same SkillToolset?"
     answer: "Yes. SkillToolset accepts any list of skill sources. You can combine inline Python dicts, file-based skill directories, and external skill paths in a single skills=[] parameter. The toolset treats them identically once loaded."
@@ -28,10 +30,11 @@ faq:
 ---
 
 > **This is Part 2 of a 3-part series** on building ADK agents with reusable skills.
-> [← Part 1: What Are Agent Skills?]({{< relref "/posts/adk-agent-skills-part1" >}})
-> [Part 3: Skills That Write Skills — Self-Extending ADK Agents →]({{< relref "/posts/adk-agent-skills-part3" >}})
-> **See also:** [5 SKILL.md Design Patterns Every ADK Developer Should Know →]({{< relref "/posts/adk-skill-design-patterns" >}})
-> **See also:** [ADK Core Skills](https://google.github.io/adk-docs/tutorials/coding-with-ai/) — 6 official skills for coding agents
+>
+> - [← Part 1: What Are Agent Skills?]({{< relref "/posts/adk-agent-skills-part1" >}})
+> - [Part 3: Skills That Write Skills — Self-Extending ADK Agents →]({{< relref "/posts/adk-agent-skills-part3" >}})
+> - [5 SKILL.md Design Patterns Every ADK Developer Should Know →]({{< relref "/posts/adk-skill-design-patterns" >}})
+> - [ADK Core Skills](https://google.github.io/adk-docs/tutorials/coding-with-ai/) — 6 official skills for coding agents
 
 In Part 1, we covered progressive disclosure — the L1/L2/L3 pattern that keeps agent context small — and built an inline SEO checklist skill in Python. Inline skills are fast to write, but the knowledge lives only in your code. This post moves beyond Python strings into ADK skills that live on disk, come from community repos, and get wired into a working agent.
 
@@ -254,5 +257,13 @@ Yes. Google publishes [6 official ADK development skills](https://github.com/goo
 7. [awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills) — 100+ production skills organized by domain
 8. [content-research-writer](https://github.com/ComposioHQ/awesome-claude-skills/blob/master/content-research-writer/SKILL.md) — The external skill used in this tutorial
 9. [ADK Core Skills](https://github.com/google/adk-docs/tree/main/skills) — 6 official first-party skills for ADK development
+
+---
+
+{{< card-link href="https://github.com/lavinigam-gcp/build-with-adk/tree/main/adk-agent-skills-tutorial" title="Companion Repository" description="Clone the repo and run file-based and external skill patterns with adk web ." icon="&#x1F4E6;" >}}
+
+{{< card-link href="https://google.github.io/adk-docs/skills/" title="ADK Skills Documentation" description="Official guide for SkillToolset, progressive disclosure, and skill loading" icon="&#x1F4DA;" >}}
+
+{{< card-link href="https://agentskills.io/specification" title="Agent Skills Specification" description="The open standard adopted by 30+ agents for the SKILL.md format" icon="&#x1F310;" >}}
 
 {{< button href="https://github.com/lavinigam-gcp/build-with-adk/tree/main/adk-agent-skills-tutorial" text="Clone the Repo" >}}

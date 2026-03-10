@@ -5,13 +5,15 @@ lastmod: 2026-03-10T10:00:00+05:30
 draft: false
 description: "Build an ADK meta skill that generates new SKILL.md files on demand. Turn your agent into a self-extending system that creates reusable skills automatically."
 tags: ["adk", "skills", "agents", "skilltoolset", "gemini"]
+techArticle: true
 categories: ["Agent Engineering"]
 series: ["agent-engineering"]
 showToc: true
 TocOpen: false
+comments: true
 cover:
   image: "cover.webp"
-  alt: "ADK meta skill creator: agent generating new SKILL.md files on demand"
+  alt: "ADK meta skill creator: self-extending agent generating new SKILL.md files on demand following agentskills.io specification"
 faq:
   - question: "Can generated skills be loaded in the same session?"
     answer: "Yes. After the meta skill writes a new SKILL.md file to disk, you can add its directory to the SkillToolset and the agent can use it immediately. In practice, reloading the agent with the new skill directory is the cleanest approach."
@@ -26,10 +28,11 @@ faq:
 ---
 
 > **This is Part 3 of a 3-part series** on building ADK agents with reusable skills.
-> [← Part 1: What Are Agent Skills?]({{< relref "/posts/adk-agent-skills-part1" >}})
-> [← Part 2: File-Based, External Skills, and SkillToolset Internals]({{< relref "/posts/adk-agent-skills-part2" >}})
-> **See also:** [5 SKILL.md Design Patterns Every ADK Developer Should Know →]({{< relref "/posts/adk-skill-design-patterns" >}})
-> **See also:** [ADK Core Skills](https://google.github.io/adk-docs/tutorials/coding-with-ai/) — 6 official skills for coding agents
+>
+> - [← Part 1: What Are Agent Skills?]({{< relref "/posts/adk-agent-skills-part1" >}})
+> - [← Part 2: File-Based, External Skills, and SkillToolset Internals]({{< relref "/posts/adk-agent-skills-part2" >}})
+> - [5 SKILL.md Design Patterns Every ADK Developer Should Know →]({{< relref "/posts/adk-skill-design-patterns" >}})
+> - [ADK Core Skills](https://google.github.io/adk-docs/tutorials/coding-with-ai/) — 6 official skills for coding agents
 
 In Parts 1 and 2, we built ADK skills that exist — an inline SEO checklist, file-based and external skills loaded from directories, all wired into a `SkillToolset` with three auto-generated tools. Part 3 closes the loop: the agent writes its own skills.
 
