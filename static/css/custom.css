@@ -59,6 +59,8 @@ html[data-theme="light"] .chroma .p { color: #1f2328; }
 html[data-theme="light"] .chroma .nn { color: #24292e; }
 html[data-theme="light"] .chroma .nl { color: #900; font-weight: bold; }
 html[data-theme="light"] .chroma .bp { color: #6a737d; }
+html[data-theme="light"] .chroma .gh,
+html[data-theme="light"] .chroma .gu { color: #953800; font-weight: bold; }
 html[data-theme="light"] .chroma .gd { color: #82071e; background-color: #ffebe9; }
 html[data-theme="light"] .chroma .gi { color: #116329; background-color: #dafbe1; }
 html[data-theme="light"] .chroma .err { color: #f6f8fa; background-color: #82071e; }
@@ -68,7 +70,7 @@ html[data-theme="light"] .chroma .ln { color: #7f7f7f; }
 html[data-theme="light"] .chroma .w { color: #fff; }
 /* Copy button — adjust for light background */
 html[data-theme="light"] .copy-code {
-  color: rgba(0, 0, 0, 0.6);
+  color: rgba(0, 0, 0, 0.75);
   background: rgba(200, 200, 200, 0.5);
 }
 
@@ -113,6 +115,40 @@ html[data-theme="light"] .copy-code {
 .alert-caution { border-left-color: #ef4444; }
 .alert-caution .alert-heading { color: #ef4444; }
 .alert-caution .alert-icon svg { fill: #ef4444; }
+/* Light-mode WCAG AA contrast overrides (-700 shades) */
+html[data-theme="light"] .alert-note .alert-heading { color: #1d4ed8; }
+html[data-theme="light"] .alert-note .alert-icon svg { fill: #1d4ed8; }
+html[data-theme="light"] .alert-tip .alert-heading { color: #15803d; }
+html[data-theme="light"] .alert-tip .alert-icon svg { fill: #15803d; }
+html[data-theme="light"] .alert-important .alert-heading { color: #7e22ce; }
+html[data-theme="light"] .alert-important .alert-icon svg { fill: #7e22ce; }
+html[data-theme="light"] .alert-warning .alert-heading { color: #b45309; }
+html[data-theme="light"] .alert-warning .alert-icon svg { fill: #b45309; }
+html[data-theme="light"] .alert-caution .alert-heading { color: #b91c1c; }
+html[data-theme="light"] .alert-caution .alert-icon svg { fill: #b91c1c; }
+
+/* === Post Content Links — WCAG 1.4.1 (color alone) ===
+   PaperMod uses box-shadow: 0 1px as a faux underline. Lighthouse requires
+   text-decoration for compliance, so we swap: remove box-shadow, add underline. */
+.post-content a {
+  box-shadow: none;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.post-content a:hover {
+  text-decoration-thickness: 2px;
+}
+/* Exclude elements that have their own visual treatment */
+.post-content .btn,
+.post-content .card-link,
+.post-content .anchor,
+.post-content .heading-anchor a,
+.post-content .toc a,
+.post-content .footnote-backref,
+.post-content sup a {
+  text-decoration: none;
+  box-shadow: none;
+}
 
 /* === Heading Anchors === */
 .heading-anchor { position: relative; }
@@ -192,6 +228,12 @@ figcaption {
 .shortcode-alert-warning .alert-heading { color: #f59e0b; }
 .shortcode-alert-caution { border-left-color: #ef4444; }
 .shortcode-alert-caution .alert-heading { color: #ef4444; }
+/* Light-mode WCAG AA contrast overrides */
+html[data-theme="light"] .shortcode-alert-note .alert-heading { color: #1d4ed8; }
+html[data-theme="light"] .shortcode-alert-tip .alert-heading { color: #15803d; }
+html[data-theme="light"] .shortcode-alert-important .alert-heading { color: #7e22ce; }
+html[data-theme="light"] .shortcode-alert-warning .alert-heading { color: #b45309; }
+html[data-theme="light"] .shortcode-alert-caution .alert-heading { color: #b91c1c; }
 
 /* === Tabs === */
 .tabs {
@@ -318,10 +360,12 @@ sup a {
   font-weight: 600;
   padding: 0 2px;
 }
+html[data-theme="light"] sup a { color: #1d4ed8; }
 .footnote-backref {
   text-decoration: none;
   color: #3b82f6;
 }
+html[data-theme="light"] .footnote-backref { color: #1d4ed8; }
 
 /* === Badges === */
 .badge {
@@ -336,19 +380,19 @@ sup a {
   line-height: 1.6;
 }
 .badge-new {
-  background: #22c55e;
+  background: #15803d;
   color: #fff;
 }
 .badge-beta {
-  background: #3b82f6;
+  background: #1d4ed8;
   color: #fff;
 }
 .badge-deprecated {
-  background: #ef4444;
+  background: #b91c1c;
   color: #fff;
 }
 .badge-experimental {
-  background: #f59e0b;
+  background: #b45309;
   color: #fff;
 }
 .badge-outline {
