@@ -26,7 +26,7 @@ faq:
   - question: "How does SkillToolset handle duplicate skill names?"
     answer: "It raises a ValueError at import time if any two skills share the same name field. This happens before the agent starts, so you get an immediate, clear error rather than confusing runtime behavior."
   - question: "Can I load ADK Core Skills with SkillToolset?"
-    answer: "Yes. Google publishes 6 official ADK development skills as standard SKILL.md directories. Since they follow the agentskills.io specification, you can load them with load_skill_from_dir exactly like any file-based or external skill. Install with npx skills add google/adk-docs -y -g, then point load_skill_from_dir at the installed directory."
+    answer: "Yes. Google publishes official ADK development skills as standard SKILL.md directories. Since they follow the agentskills.io specification, you can load them with load_skill_from_dir exactly like any file-based or external skill. Install with npx skills add google/adk-docs -y -g, then point load_skill_from_dir at the installed directory."
 ---
 
 > **This is Part 2 of a 3-part series** on building ADK agents with reusable skills.
@@ -34,7 +34,7 @@ faq:
 > - [← Part 1: What Are Agent Skills?]({{< relref "/posts/adk-agent-skills-part1" >}})
 > - [Part 3: Skills That Write Skills — Self-Extending ADK Agents →]({{< relref "/posts/adk-agent-skills-part3" >}})
 > - [5 SKILL.md Design Patterns Every ADK Developer Should Know →]({{< relref "/posts/adk-skill-design-patterns" >}})
-> - [ADK Core Skills](https://google.github.io/adk-docs/tutorials/coding-with-ai/) — 6 official skills for coding agents
+> - [ADK Core Skills](https://google.github.io/adk-docs/tutorials/coding-with-ai/) — official skills for building ADK agents
 
 In Part 1, we covered progressive disclosure — the L1/L2/L3 pattern that keeps agent context small — and built an inline SEO checklist skill in Python. Inline skills are fast to write, but the knowledge lives only in your code. This post moves beyond Python strings into ADK skills that live on disk, come from community repos, and get wired into a working agent.
 
@@ -112,7 +112,7 @@ An **external skill** is a file-based skill loaded from a source outside your pr
 
 External skills work exactly like file-based skills — the only difference is where the directory came from. Instead of writing your own SKILL.md, you download one from a community repository and load it with the same `load_skill_from_dir` call.
 
-External skills aren't limited to community repos. Google publishes [6 official ADK development skills](https://github.com/google/adk-docs/tree/main/skills) — covering the dev guide, cheatsheet, evaluation, deployment, observability, and scaffolding — installable with `npx skills add google/adk-docs -y -g`. These are first-party external skills that follow the same agentskills.io spec, loadable via `load_skill_from_dir` just like the community `content-research-writer` skill below.
+External skills aren't limited to community repos. Google publishes [official ADK development skills](https://github.com/google/adk-docs/tree/main/skills) — covering the dev guide, cheatsheet, evaluation, deployment, observability, and scaffolding — installable with `npx skills add google/adk-docs -y -g`. These are first-party external skills that follow the same agentskills.io spec, loadable via `load_skill_from_dir` just like the community `content-research-writer` skill below.
 
 The [`content-research-writer`](https://github.com/ComposioHQ/awesome-claude-skills/blob/master/content-research-writer/SKILL.md) skill in this agent is adapted from [Composio's awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills) repository, which has over 100 production skills for various domains. The workflow for loading an external skill:
 
@@ -242,7 +242,7 @@ The Agent Skills specification does not impose hard size limits, but practical c
 It raises a `ValueError` at import time if any two skills share the same `name` field. This happens before the agent starts, so you get an immediate, clear error rather than confusing runtime behavior.
 
 **Can I load ADK Core Skills with SkillToolset?**
-Yes. Google publishes [6 official ADK development skills](https://github.com/google/adk-docs/tree/main/skills) as standard SKILL.md directories. Since they follow the agentskills.io specification, you can load them with `load_skill_from_dir` exactly like any file-based or external skill. Install with `npx skills add google/adk-docs -y -g`, then point `load_skill_from_dir` at the installed directory.
+Yes. Google publishes [official ADK development skills](https://github.com/google/adk-docs/tree/main/skills) as standard SKILL.md directories. Since they follow the agentskills.io specification, you can load them with `load_skill_from_dir` exactly like any file-based or external skill. Install with `npx skills add google/adk-docs -y -g`, then point `load_skill_from_dir` at the installed directory.
 
 ---
 
@@ -256,7 +256,7 @@ Yes. Google publishes [6 official ADK development skills](https://github.com/goo
 6. [`skills_agent` sample](https://github.com/google/adk-python/tree/main/contributing/samples/skills_agent/) — Official ADK sample with inline + file-based skills
 7. [awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills) — 100+ production skills organized by domain
 8. [content-research-writer](https://github.com/ComposioHQ/awesome-claude-skills/blob/master/content-research-writer/SKILL.md) — The external skill used in this tutorial
-9. [ADK Core Skills](https://github.com/google/adk-docs/tree/main/skills) — 6 official first-party skills for ADK development
+9. [ADK Core Skills](https://github.com/google/adk-docs/tree/main/skills) — official skills for building ADK agents
 
 ---
 
