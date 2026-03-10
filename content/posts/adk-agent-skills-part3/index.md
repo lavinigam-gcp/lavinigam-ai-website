@@ -1,7 +1,7 @@
 ---
 title: "Self-Extending ADK Agents: Meta Skills That Write SKILL.md Files (Part 3)"
 date: 2026-03-03T10:00:00+05:30
-lastmod: 2026-03-05T10:00:00+05:30
+lastmod: 2026-03-10T10:00:00+05:30
 draft: false
 description: "Build an ADK meta skill that generates new SKILL.md files on demand. Turn your agent into a self-extending system that creates reusable skills automatically."
 tags: ["adk", "skills", "agents", "skilltoolset", "gemini"]
@@ -12,12 +12,24 @@ TocOpen: false
 cover:
   image: "cover.webp"
   alt: "ADK meta skill creator: agent generating new SKILL.md files on demand"
+faq:
+  - question: "Can generated skills be loaded in the same session?"
+    answer: "Yes. After the meta skill writes a new SKILL.md file to disk, you can add its directory to the SkillToolset and the agent can use it immediately. In practice, reloading the agent with the new skill directory is the cleanest approach."
+  - question: "How do you version-control generated skills?"
+    answer: "Treat generated SKILL.md files like any other code artifact — commit them to git. The meta skill writes to a designated output directory, and you review and commit the generated files. This preserves the audit trail and lets you refine generated skills over time."
+  - question: "What prevents the agent from generating harmful or incorrect skills?"
+    answer: "The meta skill's instructions define the output format and quality constraints. You can add guardrails like requiring specific sections, mandating safety disclaimers, or restricting the domains the agent can generate skills for. The generated SKILL.md files are also human-readable, so you review them before deployment."
+  - question: "Does the meta skill work with models other than Gemini?"
+    answer: "The meta skill pattern is model-agnostic — it generates text files following the agentskills.io specification. Any LLM that can follow structured output instructions can generate valid SKILL.md files. ADK itself supports multiple model backends."
+  - question: "How do ADK Core Skills relate to the meta skill pattern?"
+    answer: "ADK Core Skills are 6 pre-built official skills covering ADK development, evaluation, deployment, and observability. The meta skill pattern generates new skills on demand. They complement each other: Core Skills provide baseline ADK knowledge, while the meta skill-creator generates domain-specific skills your team needs beyond what Google provides."
 ---
 
 > **This is Part 3 of a 3-part series** on building ADK agents with reusable skills.
 > [← Part 1: What Are Agent Skills?]({{< relref "/posts/adk-agent-skills-part1" >}})
 > [← Part 2: File-Based, External Skills, and SkillToolset Internals]({{< relref "/posts/adk-agent-skills-part2" >}})
 > **See also:** [5 SKILL.md Design Patterns Every ADK Developer Should Know →]({{< relref "/posts/adk-skill-design-patterns" >}})
+> **See also:** [ADK Core Skills](https://google.github.io/adk-docs/tutorials/coding-with-ai/) — 6 official skills for coding agents
 
 In Parts 1 and 2, we built ADK skills that exist — an inline SEO checklist, file-based and external skills loaded from directories, all wired into a `SkillToolset` with three auto-generated tools. Part 3 closes the loop: the agent writes its own skills.
 
@@ -103,7 +115,7 @@ Three directions to explore from here:
 
 - **Script execution** — The ADK source contains a [`RunSkillScriptTool`](https://github.com/google/adk-python/tree/main/src/google/adk/tools/skill_toolset.py) that executes Python and shell scripts from the `scripts/` directory. The docs say "not yet supported," but the implementation is functional. Skills that can run code, not just provide instructions.
 - **Multi-agent + Skills** — A [`SequentialAgent`](https://google.github.io/adk-docs/agents/workflow-agents/sequential-agents/) pipeline where a researcher agent loads the content-research-writer skill and feeds into a writer agent with the blog-writer skill. SkillToolset becomes a modular knowledge layer across your entire agent system.
-- **Team skill libraries** — Share skills via git repos, version them with tags, load them into any agent that follows the agentskills.io spec. A curated library of team-specific skills, each one raising the quality floor the way Giorgio's governance skill did.
+- **Team skill libraries** — Share skills via git repos, version them with tags, load them into any agent that follows the agentskills.io spec. Google does this with [6 official ADK development skills](https://github.com/google/adk-docs/tree/main/skills) — a curated library installable via `npx skills add google/adk-docs -y -g` into Gemini CLI, Claude Code, or Cursor. A team-specific library raises the quality floor the way Giorgio's governance skill did.
 
 Clone the [companion repo](https://github.com/lavinigam-gcp/build-with-adk/tree/main/adk-agent-skills-tutorial), install dependencies, set your API key, and run `adk web .` from the project root to see all four patterns in action. Swap in your own SKILL.md files under `app/skills/`, or ask the skill-creator to generate one for your domain.
 
@@ -123,6 +135,8 @@ Across the [full Agent Engineering series](/series/agent-engineering/), we built
 
 The core idea: skills turn a monolithic system prompt into a modular knowledge layer. The agent decides what to load, when to load it, and how to compose multiple skills for complex tasks. That shift — from "everything always present" to "load on demand" — changes not just token efficiency but agent behavior itself.
 
+The ecosystem validates this: Google's [ADK Core Skills](https://google.github.io/adk-docs/tutorials/coding-with-ai/) use the same SKILL.md format to teach coding agents how to build ADK applications — the specification powering both the tools that write agents and the agents themselves.
+
 ## Frequently Asked Questions
 
 **Can generated skills be loaded in the same session?**
@@ -136,6 +150,9 @@ The meta skill's instructions define the output format and quality constraints. 
 
 **Does the meta skill work with models other than Gemini?**
 The meta skill pattern is model-agnostic — it generates text files following the agentskills.io specification. Any LLM that can follow structured output instructions can generate valid SKILL.md files. ADK itself supports multiple model backends.
+
+**How do ADK Core Skills relate to the meta skill pattern?**
+ADK Core Skills are [6 pre-built official skills](https://github.com/google/adk-docs/tree/main/skills) covering ADK development, evaluation, deployment, and observability. The meta skill pattern from this post generates *new* skills on demand. They complement each other: Core Skills provide baseline ADK knowledge, while the meta skill-creator generates domain-specific skills your team needs beyond what Google provides.
 
 ---
 
@@ -162,5 +179,6 @@ The meta skill pattern is model-agnostic — it generates text files following t
 19. [@Pavan_Belagatti — MCP vs Skills](https://x.com/Pavan_Belagatti/status/2027396542815199643) — Clear MCP/Skills differentiation
 20. [@dAAAb — 15 Open-Source Agent Skills](https://x.com/dAAAb/status/2028666775001608334) — 40+ agents supporting agentskills.io
 21. [@alexalbert__ — Agent Skills as open standard](https://x.com/alexalbert__/status/2001760879302553906)
+22. [ADK Core Skills](https://google.github.io/adk-docs/tutorials/coding-with-ai/) — 6 official development skills for coding agents
 
 {{< button href="https://github.com/lavinigam-gcp/build-with-adk/tree/main/adk-agent-skills-tutorial" text="Clone the Repo" >}}
