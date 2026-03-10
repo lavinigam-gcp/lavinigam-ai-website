@@ -1,4 +1,30 @@
-<a href="{{ .Destination | safeURL }}"
+{{- $dest := .Destination -}}
+{{- $isExternal := strings.HasPrefix $dest "http" -}}
+{{- if $isExternal -}}
+  {{- $utmDomains := slice
+    "google.github.io/adk"
+    "github.com/google/adk"
+    "github.com/lavinigam-gcp/build-with-adk"
+    "agentskills.io"
+    "cloud.google.com"
+  -}}
+  {{- $needsUTM := false -}}
+  {{- range $utmDomains -}}
+    {{- if strings.Contains $dest . -}}
+      {{- $needsUTM = true -}}
+    {{- end -}}
+  {{- end -}}
+  {{- if $needsUTM -}}
+    {{- $slug := .Page.File.ContentBaseName | default .Page.Title | urlize -}}
+    {{- $qs := querify "utm_source" "lavinigam-blog" "utm_medium" "blog" "utm_campaign" $slug -}}
+    {{- if strings.Contains $dest "?" -}}
+      {{- $dest = printf "%s&%s" $dest $qs -}}
+    {{- else -}}
+      {{- $dest = printf "%s?%s" $dest $qs -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+<a href="{{ $dest | safeURL }}"
   {{- with .Title }} title="{{ . }}"{{ end }}
-  {{- if strings.HasPrefix .Destination "http" }} target="_blank" rel="noopener noreferrer"{{ end }}
+  {{- if $isExternal }} target="_blank" rel="noopener noreferrer"{{ end }}
 >{{ .Text | safeHTML }}</a>

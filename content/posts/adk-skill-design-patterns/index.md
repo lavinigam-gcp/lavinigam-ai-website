@@ -1,7 +1,7 @@
 ---
 title: "5 Agent Skill Design Patterns Every ADK Developer Should Know"
 date: 2026-03-07T10:00:00+05:30
-lastmod: 2026-03-07T23:55:00+05:30
+lastmod: 2026-03-10T10:00:00+05:30
 draft: false
 description: "Master 5 SKILL.md design patterns for Google ADK agents — Tool Wrapper, Generator, Reviewer, Inversion, Pipeline. Includes working code and a decision tree."
 tags: ["adk", "skills", "agents", "design-patterns", "skilltoolset", "gemini"]
@@ -26,6 +26,8 @@ faq:
     answer: "SKILL.md files are markdown documents with YAML frontmatter (name, description) and structured instructions. ADK's SkillToolset loads them via load_skill_from_dir(), auto-generates three tools (list_skills, load_skill, load_skill_resource), and uses progressive disclosure to load full instructions only when relevant to the user's query."
   - question: "Which SKILL.md design pattern should I start with?"
     answer: "Start with Tool Wrapper — it is the simplest pattern (just instructions plus reference files) and the most widely adopted. Wrap your team's coding conventions or a library's best practices into a SKILL.md with a references/ directory. Graduate to Generator or Reviewer when you need structured output or evaluation."
+  - question: "What are ADK Core Skills and how do they relate to SkillToolset?"
+    answer: "ADK Core Skills are 6 official skills published by Google that teach coding agents (Gemini CLI, Claude Code, Cursor) how to write ADK code correctly. They follow the Tool Wrapper pattern and use the agentskills.io specification. SkillToolset is the runtime API that equips deployed production agents with skills. Both use the same SKILL.md format: Core Skills help you build ADK agents; SkillToolset helps your agents run with modular knowledge."
 series: ["agent-engineering"]
 showToc: true
 TocOpen: false
@@ -40,6 +42,7 @@ cover:
 > - [Part 1: Progressive Disclosure with SkillToolset]({{< relref "/posts/adk-agent-skills-part1" >}})
 > - [Part 2: File-Based, External Skills & SkillToolset Internals]({{< relref "/posts/adk-agent-skills-part2" >}})
 > - [Part 3: Skills That Write Skills — Self-Extending ADK Agents]({{< relref "/posts/adk-agent-skills-part3" >}})
+> **See also:** [ADK Core Skills](https://google.github.io/adk-docs/tutorials/coding-with-ai/) — 6 official skills for coding agents
 
 **ADK skill design patterns** are reusable structural templates for organizing SKILL.md files — the markdown-based instruction format that tells Google ADK agents how to use tools, generate content, or orchestrate multi-step workflows. In [Parts 1-3]({{< relref "/posts/adk-agent-skills-part1" >}}) of this series, I covered the foundations — what agent skills are, how Google ADK's [SkillToolset](https://google.github.io/adk-docs/skills/) implements progressive disclosure, and how to build self-extending agents with meta-skills. But one question kept coming up in my own projects: I know how to create a skill, but how should I structure the content inside it?
 
@@ -169,6 +172,7 @@ When you want your agent to apply consistent, expert-level conventions for a spe
 - **Vercel [`react-best-practices`](https://github.com/vercel-labs/agent-skills)** — 40+ React and Next.js performance rules from Vercel Engineering, organized by impact level (CRITICAL → LOW), loaded on demand when the agent works on React or Next.js code
 - **Supabase [`supabase-postgres-best-practices`](https://github.com/supabase/agent-skills)** — Postgres optimization guidelines across 8 categories (query performance, connection management, RLS, security) structured as on-demand references
 - **Google [`gemini-api-dev`](https://github.com/google-gemini/gemini-skills)** — Google's official Tool Wrapper for the Gemini API, encoding best practices for building Gemini-powered apps, installable directly into any skills-compatible agent
+- **Google [`adk-core-skills`](https://github.com/google/adk-docs/tree/main/skills)** — Google's official ADK development skills: 6 skills covering the ADK developer guide, cheatsheet, evaluation, deployment, observability, and scaffolding. Installable via `npx skills add google/adk-docs -y -g` into any coding agent (Gemini CLI, Claude Code, Cursor). These are Tool Wrappers that teach coding agents how to write ADK code correctly — the ADK team dogfooding the same SKILL.md format that `SkillToolset` uses at runtime.
 
 The pattern works equally well for internal tools: write a `google-adk-conventions` skill that encodes your team's ADK patterns — which model to default to, how to name agents, how to wire toolsets, how to handle errors — and every ADK agent your team builds follows the same conventions automatically, without repeating them in every system prompt.
 
@@ -438,6 +442,7 @@ You don't have to write every skill from scratch. The [Agent Skills standard](ht
 
 - **[skills.sh](https://skills.sh/)** — the largest community marketplace (86,000+ installs); browse and install any skill with `npx skills add <owner/repo>`
 - **[google-gemini/gemini-skills](https://github.com/google-gemini/gemini-skills)** — Google's official Tool Wrapper skills for the Gemini API, covering best practices for building Gemini-powered apps
+- **[google/adk-docs/skills](https://github.com/google/adk-docs/tree/main/skills)** — Google's 6 official ADK development skills (dev guide, cheatsheet, eval, deploy, observability, scaffold) — install via `npx skills add google/adk-docs -y -g`
 - **[vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills)** — Vercel's official skills for React, Next.js, AI SDK, and deployment patterns (22K stars)
 - **[supabase/agent-skills](https://github.com/supabase/agent-skills)** — Supabase's Postgres optimization guidelines across query performance, RLS, and connection management
 - **[anthropics/skills](https://github.com/anthropics/skills)** — production-grade document skills for PowerPoint, Excel, Word, and PDF generation (86,500 stars)
@@ -458,6 +463,27 @@ community_skill = load_skill_from_dir(
 
 > [!WARNING]
 > **Use external skills at your own risk.** Community and third-party skills are not reviewed or endorsed by Google or the ADK team. Before loading any external skill, review its SKILL.md instructions, reference files, and scripts for unintended behavior, data exfiltration, or prompt injection. You are responsible for auditing any skill you add to your agent.
+
+### ADK Core Skills: Google's Official Development Skills
+
+Google publishes [6 official skills](https://google.github.io/adk-docs/tutorials/coding-with-ai/) that teach coding agents how to write ADK code:
+
+| Skill | What It Teaches |
+|-------|----------------|
+| `adk-dev-guide` | ADK architecture, agent types, tool definitions, callbacks |
+| `adk-cheatsheet` | Quick-reference patterns for common ADK tasks |
+| `adk-eval-guide` | Writing and running agent evaluations |
+| `adk-deploy-guide` | Deploying ADK agents to Cloud Run and Vertex AI |
+| `adk-observability-guide` | Tracing, logging, and monitoring ADK agents |
+| `adk-scaffold` | Project scaffolding and directory structure |
+
+Install all six globally with one command:
+
+```bash
+npx skills add google/adk-docs -y -g
+```
+
+These are **Tool Wrapper** skills — the same pattern covered [above](#pattern-1-tool-wrapper). They follow the agentskills.io specification, which means they work in Gemini CLI, Claude Code, Cursor, and any compatible agent. The ADK team dogfoods the same SKILL.md format that [`SkillToolset`](https://google.github.io/adk-docs/skills/) uses at runtime — one spec powering both the development workflow (coding agents writing ADK code) and the production runtime (deployed agents loading skills on demand).
 
 ---
 
@@ -489,6 +515,10 @@ SKILL.md files are markdown documents with YAML frontmatter (`name`, `descriptio
 
 ### Which SKILL.md design pattern should I start with?
 Start with **Tool Wrapper** — it's the simplest pattern (just instructions plus reference files) and the most widely adopted. Wrap your team's coding conventions or a library's best practices into a SKILL.md with a `references/` directory. Graduate to Generator or Reviewer when you need structured output or evaluation. The [decision tree](#choosing-the-right-adk-skill-pattern) above can help you pick the right pattern.
+
+### What are ADK Core Skills and how do they relate to SkillToolset?
+
+ADK Core Skills are [6 official skills](https://github.com/google/adk-docs/tree/main/skills) published by Google that teach coding agents (Gemini CLI, Claude Code, Cursor) how to write ADK code correctly. They follow the **Tool Wrapper** pattern described in this post and use the agentskills.io specification. `SkillToolset` is the runtime API that equips *deployed* production agents with skills. Both use the same SKILL.md format: Core Skills help you *build* ADK agents; SkillToolset helps your agents *run* with modular knowledge.
 
 ---
 
@@ -522,6 +552,8 @@ If you're new to ADK Skills, start with [Part 1]({{< relref "/posts/adk-agent-sk
 18. [Using Scripts in Skills](https://agentskills.io/skill-creation/using-scripts) — Script design patterns for agentic use
 19. [Evaluating Skills](https://agentskills.io/skill-creation/evaluating-skills) — Eval methodology: test cases, pass rate delta
 20. [Giorgio Crivellari — I Built an Agent Skill for Google's ADK](https://medium.com/google-cloud/i-built-an-agent-skill-for-googles-adk-here-s-why-your-coding-agent-needs-one-too-e5d3a56ef81b) — Reviewer pattern achieving 29% to 99% code quality
+21. [Coding with AI — ADK Core Skills](https://google.github.io/adk-docs/tutorials/coding-with-ai/) — Official tutorial for using ADK skills with coding agents
+22. [ADK Core Skills (GitHub)](https://github.com/google/adk-docs/tree/main/skills) — Source for the 6 official ADK development skills
 
 ---
 

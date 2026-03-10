@@ -1,27 +1,42 @@
 ---
 title: "ADK Agent Skills: Progressive Disclosure with SkillToolset (Part 1)"
 date: 2026-03-03T12:00:00+05:30
-lastmod: 2026-03-05T10:00:00+05:30
+lastmod: 2026-03-10T10:00:00+05:30
 draft: false
 description: "Learn how ADK Agent Skills use progressive disclosure to load knowledge on demand. Build your first inline skill with SkillToolset in this hands-on tutorial."
 tags: ["adk", "skills", "agents", "skilltoolset", "gemini"]
+techArticle: true
 categories: ["Agent Engineering"]
 series: ["agent-engineering"]
 showToc: true
 TocOpen: false
+comments: true
 cover:
   image: "cover.webp"
-  alt: "ADK agent skill architecture: inline skill pattern for progressive disclosure"
+  alt: "ADK Agent Skills progressive disclosure architecture: L1 metadata, L2 instructions, L3 resources loaded on demand by SkillToolset"
+faq:
+  - question: "What is the difference between MCP tools and Agent Skills?"
+    answer: "MCP (Model Context Protocol) tools give agents the ability to do things — call APIs, query databases, execute code. Agent Skills give agents knowledge — domain expertise, guidelines, and reference material loaded on demand. They are complementary: an agent uses MCP tools for actions and skills for knowledge."
+  - question: "What are the three levels of progressive disclosure in ADK?"
+    answer: "Level 1 (L1) is lightweight metadata — just the skill name and description, loaded into every call (~100 tokens per skill). Level 2 (L2) is the full instruction set, loaded only when the agent decides it needs that skill. Level 3 (L3) is supplementary resources like style guides or API references, loaded only for specific subtasks."
+  - question: "How many tokens does progressive disclosure save?"
+    answer: "For an agent with 10 skills, a monolithic system prompt approach uses approximately 10,000 tokens per call. With progressive disclosure, the agent starts with only ~1,000 tokens of L1 metadata and loads L2/L3 content on demand, reducing baseline context by roughly 90%."
+  - question: "When should I use inline skills vs file-based skills?"
+    answer: "Use inline skills for small, project-specific knowledge that won't be reused elsewhere (e.g., a single SEO checklist). Use file-based skills when the knowledge is reusable across projects, needs supplementary files (L3 resources), or should be version-controlled independently."
+  - question: "What are ADK Core Skills?"
+    answer: "ADK Core Skills are 6 official skills published by Google that teach coding agents (Gemini CLI, Claude Code, Cursor) how to write ADK code. They use the same SKILL.md format and progressive disclosure pattern as SkillToolset. Install them with npx skills add google/adk-docs -y -g."
 ---
 
 > **This is Part 1 of a 3-part series** on building ADK agents with reusable skills.
-> [Part 2: File-Based, External Skills, and SkillToolset Internals →]({{< relref "/posts/adk-agent-skills-part2" >}})
-> [Part 3: Skills That Write Skills — Self-Extending ADK Agents →]({{< relref "/posts/adk-agent-skills-part3" >}})
-> **See also:** [5 SKILL.md Design Patterns Every ADK Developer Should Know →]({{< relref "/posts/adk-skill-design-patterns" >}})
+>
+> - [Part 2: File-Based, External Skills, and SkillToolset Internals →]({{< relref "/posts/adk-agent-skills-part2" >}})
+> - [Part 3: Skills That Write Skills — Self-Extending ADK Agents →]({{< relref "/posts/adk-agent-skills-part3" >}})
+> - [5 SKILL.md Design Patterns Every ADK Developer Should Know →]({{< relref "/posts/adk-skill-design-patterns" >}})
+> - [ADK Core Skills](https://google.github.io/adk-docs/tutorials/coding-with-ai/) — 6 official skills for coding agents
 
 I'd been hearing about Agent Skills for weeks — the idea of giving agents modular knowledge they load on demand instead of cramming everything into a system prompt. I'd even used a few with Gemini CLI. But scrolling through tutorials and X threads, I kept hitting the same question: how far can this pattern actually go with Google's Agent Development Kit (ADK)?
 
-The [Agent Skills format](https://agentskills.io/) was originally developed by [Anthropic](https://www.anthropic.com/), released as an [open standard](https://github.com/agentskills/agentskills), and has been adopted by a growing list of agent products — Claude Code, GitHub Copilot, Cursor, Gemini CLI, OpenAI Codex, and [many more](https://agentskills.io/#adoption). [One take captured the momentum](https://x.com/liamottley_/status/2025863592462233830): "SaaS is being replaced by SKILL.md files" — 562 reactions on X.
+The [Agent Skills format](https://agentskills.io/) was originally developed by [Anthropic](https://www.anthropic.com/), released as an [open standard](https://github.com/agentskills/agentskills), and has been adopted by a growing list of agent products — Claude Code, GitHub Copilot, Cursor, Gemini CLI, OpenAI Codex, and [many more](https://agentskills.io/#adoption). Google publishes [6 official ADK development skills](https://google.github.io/adk-docs/tutorials/coding-with-ai/) that teach coding agents how to write ADK code — the same SKILL.md format powering both the development and runtime sides of the ecosystem. [One take captured the momentum](https://x.com/liamottley_/status/2025863592462233830): "SaaS is being replaced by SKILL.md files" — 562 reactions on X.
 
 My first thought was whether Skills are just another take on [MCP](https://modelcontextprotocol.io/). Reading through the [agentskills.io overview](https://agentskills.io/what-are-skills), the distinction became clear. MCP gives agents access to external tools and data — it's the connectivity layer. Skills teach agents what to do with those tools. MCP is "how to call a weather API." A skill is "when the user asks about travel, check weather, compare destinations, and format as an itinerary." You need both, and they [compose naturally](https://x.com/Pavan_Belagatti/status/2027396542815199643).
 
@@ -220,6 +235,9 @@ For an agent with 10 skills, a monolithic system prompt approach uses approximat
 **When should I use inline skills vs file-based skills?**
 Use inline skills for small, project-specific knowledge that won't be reused elsewhere (e.g., a single SEO checklist). Use file-based skills when the knowledge is reusable across projects, needs supplementary files (L3 resources), or should be version-controlled independently.
 
+**What are ADK Core Skills?**
+ADK Core Skills are [6 official skills](https://github.com/google/adk-docs/tree/main/skills) published by Google that teach coding agents (Gemini CLI, Claude Code, Cursor) how to write ADK code. They use the same SKILL.md format and progressive disclosure pattern as `SkillToolset` — the Tool Wrapper pattern covered in the [Design Patterns post]({{< relref "/posts/adk-skill-design-patterns#pattern-1-tool-wrapper" >}}). Install them with `npx skills add google/adk-docs -y -g`.
+
 ## References
 
 1. [Skills for ADK Agents](https://google.github.io/adk-docs/skills/) — Official ADK documentation for SkillToolset and progressive disclosure
@@ -230,5 +248,14 @@ Use inline skills for small, project-specific knowledge that won't be reused els
 6. [`skills_agent` sample](https://github.com/google/adk-python/tree/main/contributing/samples/skills_agent/) — Official ADK sample with inline + file-based skills
 7. [@liamottley_ — "SaaS is being replaced by SKILL.md files"](https://x.com/liamottley_/status/2025863592462233830) — 562 reactions
 8. [@Pavan_Belagatti — MCP vs Skills](https://x.com/Pavan_Belagatti/status/2027396542815199643) — Clear MCP/Skills differentiation
+9. [ADK Core Skills](https://google.github.io/adk-docs/tutorials/coding-with-ai/) — 6 official development skills for coding agents
+
+---
+
+{{< card-link href="https://github.com/lavinigam-gcp/build-with-adk/tree/main/adk-agent-skills-tutorial" title="Companion Repository" description="Clone the repo and run the inline skill pattern with adk web ." icon="&#x1F4E6;" >}}
+
+{{< card-link href="https://google.github.io/adk-docs/skills/" title="ADK Skills Documentation" description="Official guide for SkillToolset, progressive disclosure, and skill loading" icon="&#x1F4DA;" >}}
+
+{{< card-link href="https://agentskills.io/specification" title="Agent Skills Specification" description="The open standard adopted by 30+ agents for the SKILL.md format" icon="&#x1F310;" >}}
 
 {{< button href="https://github.com/lavinigam-gcp/build-with-adk/tree/main/adk-agent-skills-tutorial" text="Clone the Repo" >}}
