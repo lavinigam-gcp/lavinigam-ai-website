@@ -8,7 +8,7 @@ description: >
 
 # Analytics → Google Sheets Updater
 
-Push GA4 analytics data into the "Analytics" tab of the content tracker spreadsheet.
+Push GA4 analytics data into the "sprint1-analytics" tab of the content tracker spreadsheet.
 
 ## Usage
 

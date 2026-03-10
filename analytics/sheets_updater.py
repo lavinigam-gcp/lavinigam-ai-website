@@ -13,20 +13,39 @@ import sys
 from collections import defaultdict
 from datetime import datetime
 
+from google.analytics.data_v1beta import BetaAnalyticsDataClient
+from google.analytics.data_v1beta.types import (
+    DateRange,
+    Dimension,
+    Filter,
+    FilterExpression,
+    FilterExpressionList,
+    Metric,
+    OrderBy,
+    RunReportRequest,
+)
 from googleapiclient.discovery import build
 
 from analytics.auth import get_credentials
 from analytics.config import (
     EXCLUDED_SLUGS,
+    GA4_PROPERTY,
     POSTS_PATH_PREFIX,
     SHEETS_SPREADSHEET_ID as SPREADSHEET_ID,
 )
 
-SHEET_NAME = "Analytics"
+SHEET_NAME = "sprint1-analytics"
 
 # Template for section header rows inserted before each period's data.
 # Callers substitute {period} with a human-readable label, e.g. "Last 28 Days".
 SECTION_MARKER = "── {period} Performance"
+DOC_CLICKS_MARKER = "── {period} Doc Referrals"
+DOC_CLICKS_HEADERS = ["Post", "ADK Docs Page", "Clicks"]
+ADK_LINK_DOMAINS = [
+    "google.github.io/adk-docs",               # ADK docs
+    "github.com/lavinigam-gcp/build-with-adk", # code samples repo
+]
+MIN_METRICS_ROWS = 15  # minimum gap rows reserved below metrics section
 
 # ---------------------------------------------------------------------------
 # Color palette (RGB values on 0–1 scale)
@@ -437,23 +456,9 @@ def write_title_block(service, sheet_id: int) -> None:
 
 
 def update_summary_row(service, period: str, start_date: str, end_date: str) -> None:
-    """Update row 2 with the latest run timestamp for this period."""
-    result = service.spreadsheets().values().get(
-        spreadsheetId=SPREADSHEET_ID,
-        range=f"{SHEET_NAME}!A2",
-    ).execute()
-    current = result.get("values", [[""]])[0][0] if result.get("values") else ""
-
-    # Parse existing "period: value" pairs separated by " | ".
-    parts: dict[str, str] = {}
-    for part in current.split(" | "):
-        if ": " in part:
-            k, v = part.split(": ", 1)
-            parts[k.strip()] = v.strip()
-
+    """Update row 2 with a single last-updated timestamp."""
     timestamp = datetime.now().strftime("%b %-d, %Y %H:%M")
-    parts[period] = f"updated {timestamp} ({start_date} → {end_date})"
-    summary = " | ".join(f"{k}: {v}" for k, v in sorted(parts.items()))
+    summary = f"Last updated: {timestamp} ({period}: {start_date} → {end_date})"
 
     service.spreadsheets().values().update(
         spreadsheetId=SPREADSHEET_ID,
@@ -534,6 +539,94 @@ def _build_geo_summary(geo_rows: list[dict]) -> dict:
     return summary
 
 
+def _fetch_doc_clicks(start_date: str, end_date: str) -> list[dict]:
+    """Fetch outbound click events to ADK docs from GA4, grouped by post + URL."""
+    client = BetaAnalyticsDataClient(credentials=get_credentials())
+    req = RunReportRequest(
+        property=GA4_PROPERTY,
+        date_ranges=[DateRange(start_date=start_date, end_date=end_date)],
+        dimensions=[Dimension(name="pagePath"), Dimension(name="linkUrl")],
+        metrics=[Metric(name="eventCount")],
+        dimension_filter=FilterExpression(
+            and_group=FilterExpressionList(expressions=[
+                FilterExpression(filter=Filter(
+                    field_name="eventName",
+                    string_filter=Filter.StringFilter(value="click", match_type="EXACT"),
+                )),
+                FilterExpression(
+                    or_group=FilterExpressionList(expressions=[
+                        FilterExpression(filter=Filter(
+                            field_name="linkUrl",
+                            string_filter=Filter.StringFilter(
+                                value=domain, match_type="CONTAINS"
+                            ),
+                        ))
+                        for domain in ADK_LINK_DOMAINS
+                    ])
+                ),
+            ])
+        ),
+        order_bys=[OrderBy(metric=OrderBy.MetricOrderBy(metric_name="eventCount"), desc=True)],
+        limit=50,
+    )
+    resp = client.run_report(req)
+    return [
+        {
+            "pagePath": row.dimension_values[0].value,
+            "linkUrl": row.dimension_values[1].value,
+            "clicks": int(row.metric_values[0].value),
+        }
+        for row in resp.rows
+        if _is_valid_post_path(row.dimension_values[0].value)
+    ]
+
+
+def build_doc_clicks_rows(
+    period: str, start_date: str, end_date: str, click_rows: list[dict]
+) -> list[list]:
+    """Build rows for the Doc Referrals section."""
+    header = f"{DOC_CLICKS_MARKER.format(period=period)} ({start_date} → {end_date})"
+    data = [
+        [r["pagePath"], r["linkUrl"].replace("https://", ""), r["clicks"]]
+        for r in click_rows
+    ]
+    return [[header]] + [DOC_CLICKS_HEADERS] + data
+
+
+def write_doc_clicks_section(
+    service, sheet_id: int,
+    metrics_insert_row: int, num_metric_rows: int,
+    period: str, start_date: str, end_date: str,
+    click_rows: list[dict],
+) -> None:
+    """Write the Doc Referrals section below the metrics section with a gap."""
+    # Reserve space for at least MIN_METRICS_ROWS posts below the metrics section.
+    # Layout: section_hdr(1) + col_hdr(1) + data(n) + gap + blank separator(1)
+    gap = max(num_metric_rows, MIN_METRICS_ROWS)
+    default_insert = metrics_insert_row + 2 + gap + 1
+
+    # If this period's doc clicks section already exists, clear and reuse that row.
+    col_a = _read_col_a(service)
+    doc_marker = DOC_CLICKS_MARKER.format(period=period)
+    insert_row = default_insert
+    for i, cell in enumerate(col_a):
+        if cell.startswith(doc_marker):
+            end = _find_section_end(col_a, i)
+            service.spreadsheets().batchUpdate(
+                spreadsheetId=SPREADSHEET_ID,
+                body={"requests": [{"deleteDimension": {"range": {
+                    "sheetId": sheet_id, "dimension": "ROWS",
+                    "startIndex": i, "endIndex": end,
+                }}}]},
+            ).execute()
+            insert_row = i
+            break
+
+    rows = build_doc_clicks_rows(period, start_date, end_date, click_rows)
+    write_section_data(service, insert_row, rows)
+    format_section(service, sheet_id, insert_row, len(click_rows))
+
+
 def update_analytics_sheet(period: str = "7d") -> None:
     """Main entry point. Fetch GA4 data and upsert the period section in the Analytics tab."""
     print(f"Fetching GA4 data for period: {period}...")
@@ -569,6 +662,18 @@ def update_analytics_sheet(period: str = "7d") -> None:
     num_data_rows = len(overview)
     print("Applying formatting...")
     format_section(service, sheet_id, insert_row, num_data_rows)
+
+    # Fetch and write doc referrals section (ADK docs + build-with-adk clicks).
+    print("Fetching doc referral clicks...")
+    click_rows = _fetch_doc_clicks(start_date, end_date)
+    if click_rows:
+        write_doc_clicks_section(
+            service, sheet_id, insert_row, num_data_rows,
+            period, start_date, end_date, click_rows,
+        )
+        print(f"Doc referrals: {len(click_rows)} rows written.")
+    else:
+        print("No doc referral clicks found for this period.")
 
     # Update summary row.
     update_summary_row(service, period, start_date, end_date)
