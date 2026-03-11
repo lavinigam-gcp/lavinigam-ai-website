@@ -523,6 +523,12 @@ html[data-theme="light"] .footnote-backref { color: #1d4ed8; }
   display: grid;
   grid-template-columns: 1fr;
   gap: 0;
+  min-width: 0;
+}
+
+.post-single-content {
+  min-width: 0;
+  overflow-x: auto;
 }
 
 @media (min-width: 1200px) {
