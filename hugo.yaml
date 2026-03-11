@@ -105,9 +105,9 @@ menu:
       name: Tags
       url: /tags/
       weight: 20
-    - identifier: archives
-      name: Archives
-      url: /archives/
+    - identifier: talks
+      name: Talks
+      url: /talks/
       weight: 30
     - identifier: search
       name: Search
