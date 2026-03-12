@@ -8,7 +8,7 @@ Author: Lavi Nigam — ML Engineer at Google, building AI Agents. Also at theage
 - /posts/ — All blog posts
 - /about/ — About the author
 - /tags/ — Browse posts by topic
-- /archives/ — Chronological archive
+- /talks/ — Conference talks and YouTube presentations on AI agents, LLMOps, and Gemini
 
 ## Featured Series: Agent Engineering with ADK
 
