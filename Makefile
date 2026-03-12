@@ -1,4 +1,4 @@
-.PHONY: new preview build preview-deploy analytics analytics-sheets help
+.PHONY: new preview build preview-deploy analytics analytics-sheets social-stats help
 
 ## Create a new post (page bundle): make new name=my-post-title
 new:
@@ -38,6 +38,21 @@ analytics:
 analytics-sheets:
 	PYTHONPATH=. .venv/bin/python analytics/update_sheets.py \
 		--period $(or $(PERIOD),7d)
+
+## Launch dedicated Chrome for social analytics scraping
+social-stats:
+	@echo "Launching dedicated Chrome for social analytics..."
+	@/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
+		--remote-debugging-port=9222 \
+		--user-data-dir=$(HOME)/.chrome-social-analytics &
+	@sleep 3
+	@curl -s http://127.0.0.1:9222/json/version > /dev/null 2>&1 \
+		&& echo "✓ Chrome DevTools active on port 9222" \
+		|| echo "✗ Chrome not responding on port 9222"
+	@echo ""
+	@echo "Next steps:"
+	@echo "  1. Verify you're logged into X, LinkedIn, Reddit, Substack"
+	@echo "  2. Run /social-analytics-update in Claude Code"
 
 ## Show available commands
 help:
