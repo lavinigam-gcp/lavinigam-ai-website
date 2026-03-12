@@ -40,11 +40,14 @@ SHEET_NAME = "sprint1-analytics"
 # Callers substitute {period} with a human-readable label, e.g. "Last 28 Days".
 SECTION_MARKER = "── {period} Performance"
 DOC_CLICKS_MARKER = "── {period} Doc Referrals"
-DOC_CLICKS_HEADERS = ["Post", "ADK Docs Page", "Clicks"]
+DOC_CLICKS_HEADERS_LEFT = ["Post", "ADK Docs Page", "Clicks"]
+DOC_CLICKS_HEADERS_RIGHT = ["Post", "Source Code Repo", "Clicks"]
 ADK_LINK_DOMAINS = [
     "google.github.io/adk-docs",               # ADK docs
     "github.com/lavinigam-gcp/build-with-adk", # code samples repo
 ]
+DOC_CLICKS_RIGHT_START = 4  # column E (0-indexed), after gap column D
+DOC_CLICKS_TOTAL_COLS = 7   # A-G spans both tables + gap
 MIN_METRICS_ROWS = 15  # minimum gap rows reserved below metrics section
 
 # ---------------------------------------------------------------------------
@@ -208,6 +211,22 @@ def clear_section(service, sheet_id: int, period: str) -> int | None:
         }]}
     ).execute()
     return start
+
+
+def _clear_all_data(service, sheet_id: int) -> None:
+    """Delete all data rows below the header, keeping title (row 1) and summary (row 2)."""
+    col_a = _read_col_a(service)
+    if len(col_a) <= 3:
+        return
+    service.spreadsheets().batchUpdate(
+        spreadsheetId=SPREADSHEET_ID,
+        body={"requests": [{"deleteDimension": {"range": {
+            "sheetId": sheet_id,
+            "dimension": "ROWS",
+            "startIndex": 3,
+            "endIndex": len(col_a),
+        }}}]},
+    ).execute()
 
 
 def next_available_row(service) -> int:
@@ -456,9 +475,8 @@ def write_title_block(service, sheet_id: int) -> None:
 
 
 def update_summary_row(service, period: str, start_date: str, end_date: str) -> None:
-    """Update row 2 with a single last-updated timestamp."""
-    timestamp = datetime.now().strftime("%b %-d, %Y %H:%M")
-    summary = f"Last updated: {timestamp} ({period}: {start_date} → {end_date})"
+    """Update row 2 with a simple last-updated date."""
+    summary = f"Last updated: {datetime.now().strftime('%b %-d, %Y')}"
 
     service.spreadsheets().values().update(
         spreadsheetId=SPREADSHEET_ID,
@@ -581,16 +599,23 @@ def _fetch_doc_clicks(start_date: str, end_date: str) -> list[dict]:
     ]
 
 
-def build_doc_clicks_rows(
-    period: str, start_date: str, end_date: str, click_rows: list[dict]
-) -> list[list]:
-    """Build rows for the Doc Referrals section."""
-    header = f"{DOC_CLICKS_MARKER.format(period=period)} ({start_date} → {end_date})"
-    data = [
+def _split_clicks_by_domain(click_rows: list[dict]) -> tuple[list[dict], list[dict]]:
+    """Split click rows into (adk_docs, source_code) by domain."""
+    docs, code = [], []
+    for r in click_rows:
+        if "google.github.io/adk-docs" in r["linkUrl"]:
+            docs.append(r)
+        else:
+            code.append(r)
+    return docs, code
+
+
+def _clicks_to_rows(click_rows: list[dict]) -> list[list]:
+    """Convert click dicts to [post, url, clicks] rows."""
+    return [
         [r["pagePath"], r["linkUrl"].replace("https://", ""), r["clicks"]]
         for r in click_rows
     ]
-    return [[header]] + [DOC_CLICKS_HEADERS] + data
 
 
 def write_doc_clicks_section(
@@ -599,32 +624,90 @@ def write_doc_clicks_section(
     period: str, start_date: str, end_date: str,
     click_rows: list[dict],
 ) -> None:
-    """Write the Doc Referrals section below the metrics section with a gap."""
-    # Reserve space for at least MIN_METRICS_ROWS posts below the metrics section.
-    # Layout: section_hdr(1) + col_hdr(1) + data(n) + gap + blank separator(1)
+    """Write side-by-side Doc Referrals tables below the metrics section."""
     gap = max(num_metric_rows, MIN_METRICS_ROWS)
-    default_insert = metrics_insert_row + 2 + gap + 1
+    insert_row = metrics_insert_row + 2 + gap + 1
 
-    # If this period's doc clicks section already exists, clear and reuse that row.
-    col_a = _read_col_a(service)
-    doc_marker = DOC_CLICKS_MARKER.format(period=period)
-    insert_row = default_insert
-    for i, cell in enumerate(col_a):
-        if cell.startswith(doc_marker):
-            end = _find_section_end(col_a, i)
-            service.spreadsheets().batchUpdate(
-                spreadsheetId=SPREADSHEET_ID,
-                body={"requests": [{"deleteDimension": {"range": {
-                    "sheetId": sheet_id, "dimension": "ROWS",
-                    "startIndex": i, "endIndex": end,
-                }}}]},
-            ).execute()
-            insert_row = i
-            break
+    docs_rows, code_rows = _split_clicks_by_domain(click_rows)
+    left_data = _clicks_to_rows(docs_rows)
+    right_data = _clicks_to_rows(code_rows)
+    max_data = max(len(left_data), len(right_data))
 
-    rows = build_doc_clicks_rows(period, start_date, end_date, click_rows)
-    write_section_data(service, insert_row, rows)
-    format_section(service, sheet_id, insert_row, len(click_rows))
+    # Section header (merged across both tables)
+    header = f"{DOC_CLICKS_MARKER.format(period=period)} ({start_date} → {end_date})"
+    hdr_row = insert_row
+    col_hdr_row = insert_row + 1
+    data_start = insert_row + 2
+
+    # Build left table rows: header + column headers + data (padded)
+    left_rows = [[header]] + [DOC_CLICKS_HEADERS_LEFT]
+    for i in range(max_data):
+        left_rows.append(left_data[i] if i < len(left_data) else ["", "", ""])
+
+    # Build right table rows: empty (header is merged) + column headers + data
+    right_rows = [[""]] + [DOC_CLICKS_HEADERS_RIGHT]
+    for i in range(max_data):
+        right_rows.append(right_data[i] if i < len(right_data) else ["", "", ""])
+
+    # Write both tables
+    left_range = f"{SHEET_NAME}!A{hdr_row + 1}"
+    right_range = f"{SHEET_NAME}!E{hdr_row + 1}"
+    service.spreadsheets().values().batchUpdate(
+        spreadsheetId=SPREADSHEET_ID,
+        body={
+            "valueInputOption": "USER_ENTERED",
+            "data": [
+                {"range": left_range, "values": left_rows},
+                {"range": right_range, "values": right_rows},
+            ],
+        },
+    ).execute()
+
+    # Formatting
+    rs = DOC_CLICKS_RIGHT_START  # 4 = column E
+    requests = [
+        # Section header: blue bg, white bold, merged across A-G
+        _repeat_cell(sheet_id, hdr_row, 0, DOC_CLICKS_TOTAL_COLS,
+                     COLOR_SECTION_BG, COLOR_WHITE_TEXT, bold=True),
+        {"mergeCells": {
+            "range": _cell_range(sheet_id, hdr_row, hdr_row + 1, 0, DOC_CLICKS_TOTAL_COLS),
+            "mergeType": "MERGE_ALL",
+        }},
+        # Left column headers (A-C)
+        _repeat_cell(sheet_id, col_hdr_row, 0, 3,
+                     COLOR_HEADER_BG, COLOR_DARK_TEXT, bold=True),
+        # Right column headers (E-G)
+        _repeat_cell(sheet_id, col_hdr_row, rs, rs + 3,
+                     COLOR_HEADER_BG, COLOR_DARK_TEXT, bold=True),
+    ]
+
+    # Alternating row colors for both tables
+    for i in range(max_data):
+        row = data_start + i
+        bg = COLOR_WHITE if i % 2 == 0 else COLOR_ROW_ALT
+        requests.append(_repeat_cell(sheet_id, row, 0, 3, bg, COLOR_DARK_TEXT))
+        requests.append(_repeat_cell(sheet_id, row, rs, rs + 3, bg, COLOR_DARK_TEXT))
+
+    # Column widths: post cols wider, URL cols wider, clicks narrow
+    requests += [
+        {"updateDimensionProperties": {
+            "range": {"sheetId": sheet_id, "dimension": "COLUMNS",
+                      "startIndex": 1, "endIndex": 2},
+            "properties": {"pixelSize": 300},
+            "fields": "pixelSize",
+        }},
+        {"updateDimensionProperties": {
+            "range": {"sheetId": sheet_id, "dimension": "COLUMNS",
+                      "startIndex": rs + 1, "endIndex": rs + 2},
+            "properties": {"pixelSize": 300},
+            "fields": "pixelSize",
+        }},
+    ]
+
+    service.spreadsheets().batchUpdate(
+        spreadsheetId=SPREADSHEET_ID,
+        body={"requests": requests},
+    ).execute()
 
 
 def update_analytics_sheet(period: str = "7d") -> None:
@@ -649,9 +732,10 @@ def update_analytics_sheet(period: str = "7d") -> None:
     # Write title block (idempotent — skips if already present).
     write_title_block(service, sheet_id)
 
-    # Clear existing section for this period, or find next available row.
-    cleared_at = clear_section(service, sheet_id, period)
-    insert_row = cleared_at if cleared_at is not None else next_available_row(service)
+    # Clear all existing data sections — only one set of metrics + doc
+    # referrals should exist at a time, regardless of period key.
+    _clear_all_data(service, sheet_id)
+    insert_row = 3  # Start right after title(0), summary(1), blank(2)
 
     # Write data rows.
     rows = build_section_rows(period, start_date, end_date, overview, geo_summary)
