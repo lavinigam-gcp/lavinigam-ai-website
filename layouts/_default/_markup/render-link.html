@@ -1,30 +1,6 @@
-{{- $dest := .Destination -}}
-{{- $isExternal := strings.HasPrefix $dest "http" -}}
-{{- if $isExternal -}}
-  {{- $utmDomains := slice
-    "google.github.io/adk"
-    "github.com/google/adk"
-    "github.com/lavinigam-gcp/build-with-adk"
-    "agentskills.io"
-    "cloud.google.com"
-  -}}
-  {{- $needsUTM := false -}}
-  {{- range $utmDomains -}}
-    {{- if strings.Contains $dest . -}}
-      {{- $needsUTM = true -}}
-    {{- end -}}
-  {{- end -}}
-  {{- if $needsUTM -}}
-    {{- $slug := .Page.File.ContentBaseName | default .Page.Title | urlize -}}
-    {{- $qs := querify "utm_source" "lavinigam-blog" "utm_medium" "blog" "utm_campaign" $slug -}}
-    {{- if strings.Contains $dest "?" -}}
-      {{- $dest = printf "%s&%s" $dest $qs -}}
-    {{- else -}}
-      {{- $dest = printf "%s?%s" $dest $qs -}}
-    {{- end -}}
-  {{- end -}}
-{{- end -}}
-<a href="{{ $dest | safeURL }}"
+{{- $dest := partial "utm-url.html" (dict "url" .Destination "page" .Page) -}}
+{{- $isExternal := partial "is-external-url.html" $dest -}}
+<a href="{{ $dest }}"
   {{- with .Title }} title="{{ . }}"{{ end }}
   {{- if $isExternal }} target="_blank" rel="noopener noreferrer"{{ end }}
 >{{ .Text | safeHTML }}</a>

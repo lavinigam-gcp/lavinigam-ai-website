@@ -1,35 +1,47 @@
 {{- if not .IsHome -}}
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  "itemListElement": [
-    {
-      "@type": "ListItem",
-      "position": 1,
-      "name": "Home",
-      "item": "{{ .Site.BaseURL }}"
-    }
-    {{- if .IsPage -}}
-    ,{
-      "@type": "ListItem",
-      "position": 2,
-      "name": {{ .Section | humanize | title | jsonify }},
-      "item": "{{ .Section | absURL }}/"
-    }
-    ,{
-      "@type": "ListItem",
-      "position": 3,
-      "name": {{ .Title | jsonify }}
-    }
-    {{- else if .IsSection -}}
-    ,{
-      "@type": "ListItem",
-      "position": 2,
-      "name": {{ .Title | jsonify }}
-    }
-    {{- end -}}
-  ]
-}
-</script>
+{{- $items := slice (dict
+  "@type" "ListItem"
+  "position" 1
+  "name" "Home"
+  "item" ("/" | absURL)
+) -}}
+{{- $includeTerminal := false -}}
+{{- if .IsPage -}}
+  {{- $includeTerminal = true -}}
+  {{- if ne .Section "" -}}
+    {{- $items = $items | append (dict
+      "@type" "ListItem"
+      "position" (add (len $items) 1)
+      "name" (.Section | humanize | title)
+      "item" (printf "%s/" (.Section | absURL))
+    ) -}}
+  {{- end -}}
+{{- else if or .IsSection (eq .Kind "taxonomy") -}}
+  {{- $includeTerminal = true -}}
+{{- else if eq .Kind "term" -}}
+  {{- $includeTerminal = true -}}
+  {{- with .Parent -}}
+    {{- $items = $items | append (dict
+      "@type" "ListItem"
+      "position" (add (len $items) 1)
+      "name" .Title
+      "item" .Permalink
+    ) -}}
+  {{- end -}}
+{{- end -}}
+{{- if $includeTerminal -}}
+  {{- $items = $items | append (dict
+    "@type" "ListItem"
+    "position" (add (len $items) 1)
+    "name" .Title
+  ) -}}
+{{- end -}}
+{{- if gt (len $items) 1 -}}
+{{- $ld := dict
+  "@context" "https://schema.org"
+  "@type" "BreadcrumbList"
+  "itemListElement" $items
+-}}
+<script type="application/ld+json">{{ $ld }}</script>
+{{- end -}}
 {{- end -}}

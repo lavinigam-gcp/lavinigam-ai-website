@@ -1,8 +1,10 @@
-{{ $href := .Get "href" }}
-{{ $text := .Get "text" | default "Link" }}
-{{ $style := .Get "style" | default "primary" }}
-{{ $external := strings.HasPrefix $href "http" }}
-<a class="btn btn-{{ $style }}" href="{{ $href | safeURL }}"
+{{- $rawHref := .Get "href" -}}
+{{- $href := partial "utm-url.html" (dict "url" $rawHref "page" .Page) -}}
+{{- $text := .Get "text" | default "Link" -}}
+{{- $rawStyle := .Get "style" | default "primary" -}}
+{{- $style := cond (in (slice "primary" "outline") $rawStyle) $rawStyle "primary" -}}
+{{- $external := partial "is-external-url.html" $href -}}
+<a class="btn btn-{{ $style }}" href="{{ $href }}"
   {{- if $external }} target="_blank" rel="noopener noreferrer"{{ end }}>
   {{ $text }}{{ if $external }} &#x2197;{{ end }}
 </a>

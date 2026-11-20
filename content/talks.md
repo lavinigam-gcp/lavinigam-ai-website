@@ -107,30 +107,6 @@ Selected talks and presentations on AI agents, LLMOps, and building with Gemini.
   </div>
 </a>
 
-<a class="talk-card" href="https://www.youtube.com/watch?v=8CWXUVjN8hc" target="_blank" rel="noopener noreferrer">
-  <div class="talk-thumb">
-    <img src="https://img.youtube.com/vi/8CWXUVjN8hc/maxresdefault.jpg" alt="MLOps Part 1">
-    <span class="talk-play">&#9654;</span>
-  </div>
-  <div class="talk-info">
-    <h3>MLOps with Lavi Nigam (Part 1)</h3>
-    <p>Foundations of MLOps — building reliable ML pipelines and deployment workflows.</p>
-    <div class="talk-meta-line"><span class="talk-channel">upGrad</span><span class="talk-meta-sep">&middot;</span><span class="talk-meta">Jan 2022</span></div>
-  </div>
-</a>
-
-<a class="talk-card" href="https://www.youtube.com/watch?v=2EvAZB7EpII" target="_blank" rel="noopener noreferrer">
-  <div class="talk-thumb">
-    <img src="https://img.youtube.com/vi/2EvAZB7EpII/maxresdefault.jpg" alt="MLOps Part 2">
-    <span class="talk-play">&#9654;</span>
-  </div>
-  <div class="talk-info">
-    <h3>MLOps with Lavi Nigam (Part 2)</h3>
-    <p>Advanced MLOps — monitoring, retraining, and scaling ML systems in production.</p>
-    <div class="talk-meta-line"><span class="talk-channel">upGrad</span><span class="talk-meta-sep">&middot;</span><span class="talk-meta">Jan 2022</span></div>
-  </div>
-</a>
-
 <a class="talk-card" href="https://www.youtube.com/watch?v=0ytUBn3MNwg" target="_blank" rel="noopener noreferrer">
   <div class="talk-thumb">
     <img src="https://img.youtube.com/vi/0ytUBn3MNwg/maxresdefault.jpg" alt="Making Data Science Models Useful in Production">

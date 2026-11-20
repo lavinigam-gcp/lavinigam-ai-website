@@ -1,0 +1,10 @@
+{{/* Classify whether a URL points outside site.BaseURL over HTTP(S). */}}
+{{- $lowerHref := lower . -}}
+{{- $isHTTP := or (strings.HasPrefix $lowerHref "http://") (strings.HasPrefix $lowerHref "https://") -}}
+{{- $isExternal := false -}}
+{{- if $isHTTP -}}
+  {{- $siteHost := lower (urls.Parse site.BaseURL).Host -}}
+  {{- $linkHost := lower (urls.Parse .).Host -}}
+  {{- $isExternal = ne $linkHost $siteHost -}}
+{{- end -}}
+{{- return $isExternal -}}

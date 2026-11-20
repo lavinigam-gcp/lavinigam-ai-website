@@ -2,52 +2,46 @@
 name: analytics-update-stats
 description: >
   Use when user says '/analytics-update-stats', 'update the sheet', 'push stats to sheets',
-  or 'sync analytics to Google Sheets'. Fetches GA4 data and upserts a period section
-  in the Analytics tab of the content tracker spreadsheet.
+  or 'sync analytics to Google Sheets'. Fetches GA4 data and refreshes the sprint1-analytics
+  tab of the content tracker spreadsheet with post metrics and outbound doc referrals.
 ---
 
 # Analytics → Google Sheets Updater
 
-Push GA4 analytics data into the "sprint1-analytics" tab of the content tracker spreadsheet.
+Push GA4 analytics data and outbound ADK doc referral clicks into the `sprint1-analytics` tab of the content tracker spreadsheet.
 
 ## Usage
 
-Run from the project root (venv must be set up):
+Run from the project root (`.venv` must be set up):
 
     make analytics-sheets [PERIOD=7d]
 
 or directly:
 
-    PYTHONPATH=. .venv/bin/python analytics/update_sheets.py --period {period}
+    PYTHONPATH=. .venv/bin/python -m analytics.update_sheets --period {period}
 
 ## Input
 
 Parse the period from the user's message. Default: `7d`.
-Valid: `1d`, `3d`, `7d`, `14d`, `21d`, `28d`, `30d`, `90d`, `365d`
+Valid presets: `1d`, `3d`, `7d`, `14d`, `21d`, `28d`, `30d`, `90d`, `365d`
+Custom date range: `YYYY-MM-DD:YYYY-MM-DD` (e.g., `2026-03-02:2026-11-20` used by `make update-data`)
 
-## Weekly tracking cadence
+## Sheet Replacement Behavior
 
-Each period overwrites only its own section — running different periods builds up a
-cumulative view of post performance since tracking started:
+Each run clears existing data rows below the title block so only a single, clean snapshot of post metrics + outbound doc referral clicks exists in `sprint1-analytics` at a time:
 
-| Week | Command | GA4 window |
-|------|---------|------------|
-| Week 1 | `make analytics-sheets PERIOD=7d` | last 7 days |
-| Week 2 | `make analytics-sheets PERIOD=14d` | last 14 days (includes week 1) |
-| Week 3 | `make analytics-sheets PERIOD=21d` | last 21 days (includes weeks 1–2) |
-| Week 4 | `make analytics-sheets PERIOD=28d` | last 28 days (full month) |
-
-After week 4, reset: run `7d` again for the next cycle. Each section stays in the sheet
-until overwritten by the same period key, so at any point you can see all periods run
-as separate blocks — each one a cumulative window from when you started tracking.
+| Cadence Option | Command | Window |
+|---|---|---|
+| Cumulative Sprint | `make update-data` or `make analytics-sheets PERIOD=2026-03-02:$(date +%Y-%m-%d)` | Sprint start to today |
+| Rolling 7 / 14 / 28 days | `make analytics-sheets PERIOD=7d` (or `14d`, `28d`) | Trailing N days |
 
 ## What it does
 
-1. Fetches GA4 data for the given period (all posts, filtered)
-2. Upserts a section in the "Analytics" tab — clears and rewrites only this period's block
-3. Applies formatting: dark title bar, blue section header, alternating rows, traffic-light
-   conditional formatting on engagement rate and bounce rate
-4. Updates the "updated at" summary in row 2
+1. Fetches GA4 post overview + geo/device breakdowns for the given period (filtered to valid post paths)
+2. Clears prior data rows below the title block in `sprint1-analytics` while preserving the title header
+3. Writes post metrics and formats header, alternating rows, and conditional engagement/bounce indicators
+4. Fetches and writes the outbound ADK docs / `build-with-adk` referral clicks table alongside post metrics
+5. Updates the "Last updated" summary in row 2
 
 ## After running
 

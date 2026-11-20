@@ -13,9 +13,9 @@
   </div>
 </div>
 
-{{/* Share post links */}}
-{{ $title := .Title | urlquery }}
-{{ $url := .Permalink | urlquery }}
+{{/* Share post links — Go html/template automatically URL-encodes query params in href */}}
+{{ $title := .Title }}
+{{ $url := .Permalink }}
 <div class="post-share">
   <p class="post-share-text">Enjoyed this? Share it</p>
   <div class="post-share-links">

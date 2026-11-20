@@ -57,6 +57,11 @@ jobs:
             --minify \
             --baseURL "https://lavinigam.com"
 
+      - name: Run regression tests
+        env:
+          HUGO_PUBLIC_DIR: ./public
+        run: make test
+
       - name: Upload artifact
         id: upload
         uses: actions/upload-artifact@v7
