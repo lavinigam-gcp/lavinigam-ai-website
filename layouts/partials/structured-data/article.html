@@ -1,33 +1,29 @@
-{{- if .IsPage -}}
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": {{ if .Params.techArticle }}"TechArticle"{{ else }}"Article"{{ end }},
-  "headline": {{ .Title | jsonify }},
-  "description": {{ .Description | default .Summary | jsonify }},
-  "datePublished": "{{ .Date.Format "2006-01-02T15:04:05Z07:00" }}",
-  "dateModified": "{{ .Lastmod.Format "2006-01-02T15:04:05Z07:00" }}",
-  "author": {
-    "@type": "Person",
-    "name": "Lavi Nigam",
-    "url": "https://lavinigam.com/about/"
-  },
-  "publisher": {
-    "@type": "Person",
-    "name": "Lavi Nigam",
-    "url": "https://lavinigam.com"
-  },
-  "url": {{ .Permalink | jsonify }},
-  "mainEntityOfPage": {
-    "@type": "WebPage",
-    "@id": {{ .Permalink | jsonify }}
-  }
-  {{- with .Params.tags -}}
-  ,"keywords": {{ . | jsonify }}
+{{- if and .IsPage (eq .Section "posts") (not .Date.IsZero) -}}
+{{- $modified := cond .Lastmod.IsZero .Date .Lastmod -}}
+{{- $type := cond (eq .Params.techArticle true) "TechArticle" "Article" -}}
+{{- $desc := .Description | default (.Summary | plainify | htmlUnescape) -}}
+{{- $author := .Params.author | default site.Params.author -}}
+{{- $ld := dict
+  "@context" "https://schema.org"
+  "@type" $type
+  "headline" .Title
+  "description" $desc
+  "datePublished" (.Date.Format "2006-01-02T15:04:05Z07:00")
+  "dateModified" ($modified.Format "2006-01-02T15:04:05Z07:00")
+  "author" (dict "@type" "Person" "name" $author "url" ("about/" | absURL))
+  "publisher" (dict "@type" "Person" "name" $author "url" (strings.TrimSuffix "/" site.BaseURL))
+  "url" .Permalink
+  "mainEntityOfPage" (dict "@type" "WebPage" "@id" .Permalink)
+-}}
+{{- with .Params.tags -}}
+  {{- $ld = merge $ld (dict "keywords" .) -}}
+{{- end -}}
+{{- with .Params.cover.image -}}
+  {{- $imgURL := . | absURL -}}
+  {{- with ($.Resources.ByType "image").GetMatch (printf "*%s*" .) -}}
+    {{- $imgURL = .Permalink -}}
   {{- end -}}
-  {{- with .Params.cover.image -}}
-  ,"image": {{ . | absURL | jsonify }}
-  {{- end -}}
-}
-</script>
+  {{- $ld = merge $ld (dict "image" $imgURL) -}}
+{{- end -}}
+<script type="application/ld+json">{{ $ld }}</script>
 {{- end -}}

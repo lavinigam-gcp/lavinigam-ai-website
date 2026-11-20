@@ -1,0 +1,56 @@
+{{/* layouts/partials/utm-url.html
+     Splits '#' manually before urls.Parse so Go net/url does not percent-encode
+     secondary '#' characters or re-escape paths when reconstructing the URL.
+     Note: "google.github.io/adk" and "github.com/google/adk" intentionally omit
+     trailing slashes to prefix-match sibling repos (adk-docs, adk-python, etc.). */}}
+{{- $dest := .url -}}
+{{- $page := .page -}}
+{{- $lowerDest := lower $dest -}}
+{{- if or (strings.HasPrefix $lowerDest "http://") (strings.HasPrefix $lowerDest "https://") -}}
+  {{- $parts := split $dest "#" -}}
+  {{- $base := index $parts 0 -}}
+  {{- $frag := "" -}}
+  {{- if gt (len $parts) 1 -}}
+    {{- $frag = printf "#%s" (delimit (after 1 $parts) "#") -}}
+  {{- end -}}
+  {{- $u := urls.Parse $base -}}
+  {{- $host := lower $u.Host -}}
+  {{- $hostPath := printf "%s%s" $host $u.Path -}}
+  {{- $utmHosts := slice "agentskills.io" "cloud.google.com" -}}
+  {{- $utmHostPaths := slice
+    "google.github.io/adk"
+    "github.com/google/adk"
+    "github.com/lavinigam-gcp/build-with-adk"
+  -}}
+  {{- with site.Params.utm -}}
+    {{- with .hosts }}{{ $utmHosts = . }}{{ end -}}
+    {{- with .hostPaths }}{{ $utmHostPaths = . }}{{ end -}}
+  {{- end -}}
+  {{- $needsUTM := false -}}
+  {{- range $utmHosts -}}
+    {{- if or (eq $host .) (strings.HasSuffix $host (printf ".%s" .)) -}}
+      {{- $needsUTM = true -}}
+    {{- end -}}
+  {{- end -}}
+  {{- range $utmHostPaths -}}
+    {{- if strings.HasPrefix $hostPath . -}}
+      {{- $needsUTM = true -}}
+    {{- end -}}
+  {{- end -}}
+  {{- if and $needsUTM (not (strings.Contains $u.RawQuery "utm_source=")) -}}
+    {{- $slug := $page.Title | urlize -}}
+    {{- with $page.File -}}
+      {{- if .ContentBaseName -}}
+        {{- $slug = .ContentBaseName | urlize -}}
+      {{- end -}}
+    {{- end -}}
+    {{- $qs := querify "utm_source" "lavinigam-blog" "utm_medium" "blog" "utm_campaign" $slug -}}
+    {{- if strings.Contains $base "?" -}}
+      {{- $base = printf "%s&%s" $base $qs -}}
+    {{- else -}}
+      {{- $base = printf "%s?%s" $base $qs -}}
+    {{- end -}}
+    {{- $dest = printf "%s%s" $base $frag -}}
+  {{- end -}}
+{{- end -}}
+{{- return $dest -}}

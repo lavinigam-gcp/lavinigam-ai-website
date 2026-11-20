@@ -1,11 +1,12 @@
-{{ $href := .Get "href" }}
-{{ $title := .Get "title" }}
-{{ $desc := .Get "description" | default "" }}
-{{ $icon := .Get "icon" | default "&#x1F4C4;" }}
-{{ $external := strings.HasPrefix $href "http" }}
-<a class="card-link" href="{{ $href | safeURL }}"
+{{- $rawHref := .Get "href" -}}
+{{- $href := partial "utm-url.html" (dict "url" $rawHref "page" .Page) -}}
+{{- $title := .Get "title" -}}
+{{- $desc := .Get "description" | default "" -}}
+{{- $icon := .Get "icon" | default "&#x1F4C4;" -}}
+{{- $external := partial "is-external-url.html" $href -}}
+<a class="card-link" href="{{ $href }}"
   {{- if $external }} target="_blank" rel="noopener noreferrer"{{ end }}>
-  <span class="card-link-icon">{{ $icon | safeHTML }}</span>
+  <span class="card-link-icon">{{ $icon | htmlUnescape }}</span>
   <div class="card-link-body">
     <p class="card-link-title">{{ $title }}</p>
     {{- with $desc }}
